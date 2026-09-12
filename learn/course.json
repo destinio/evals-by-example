@@ -1,0 +1,85 @@
+{
+  "steps": [
+    {
+      "n": 1,
+      "slug": "step-01-observe",
+      "title": "Observe",
+      "idea": "You can't improve what you can't see. Instrument the app so every report it writes becomes a trace you can read.",
+      "build": "wrapOpenAI on the model client, traced + span.log around writeReport, and metadata describing each dog's day.",
+      "braintrust": ["Tracing", "Logs"],
+      "beat": "Every report we've ever written, with its cost and the data behind it."
+    },
+    {
+      "n": 2,
+      "slug": "step-02-score",
+      "title": "Score one thing",
+      "idea": "Turn a hunch into a number. Write one scorer in plain code and run your first experiment.",
+      "build": "A scorer that checks every number in a report appears in the day log, and an Eval() over the four dogs.",
+      "braintrust": ["Evaluation", "Experiments"],
+      "beat": "67% — and here's the exact row that failed."
+    },
+    {
+      "n": 3,
+      "slug": "step-03-hard-cases",
+      "title": "Keep the hard cases",
+      "idea": "Four dogs isn't a test set. Build a dataset of deliberately awkward days that every future prompt has to survive.",
+      "build": "A Braintrust dataset: the four dogs plus nasty ones — nothing logged, contradictory entries, a day that's only an incident.",
+      "braintrust": ["Datasets", "Loop"],
+      "beat": "The awkward days are permanent now. Nothing can quietly break them again."
+    },
+    {
+      "n": 4,
+      "slug": "step-04-prove-it",
+      "title": "Fix the prompt, prove it",
+      "idea": "Change the prompt with evidence instead of vibes, and find out what the fix broke.",
+      "build": "A second prompt version, a second experiment on the same dataset, and a row-by-row comparison.",
+      "braintrust": ["Experiment comparison"],
+      "beat": "v1 against v2, row by row — including what got worse."
+    },
+    {
+      "n": 5,
+      "slug": "step-05-judge",
+      "title": "Judge what code can't",
+      "idea": "Some failures don't show up in a regex. Use a model as a judge, then check whether you agree with it.",
+      "build": "An LLM-as-judge scorer for buried medication and invented warmth, validated against your own ratings.",
+      "braintrust": ["Scorers", "autoevals", "Loop"],
+      "beat": "Code catches invented numbers. A judge catches buried medication."
+    },
+    {
+      "n": 6,
+      "slug": "step-06-humans",
+      "title": "Ask the humans",
+      "idea": "The people reading the reports already know which ones are wrong. Capture that and feed it back.",
+      "build": "Thumbs up/down on the owner portal, a staff correction box, and feedback flowing into Braintrust and on into the dataset.",
+      "braintrust": ["Annotation", "Human review", "Feedback"],
+      "beat": "A complaint on Tuesday is a test case on Wednesday."
+    },
+    {
+      "n": 7,
+      "slug": "step-07-no-deploy",
+      "title": "Iterate without deploying",
+      "idea": "Prompt changes shouldn't need a code release. Move the prompt into Braintrust and work on it there.",
+      "build": "The app loading its prompt from Braintrust, iterated in the playground against real days, with models compared side by side.",
+      "braintrust": ["Playground", "Prompts"],
+      "beat": "Change the prompt, try it on 20 real days, ship it — no deploy."
+    },
+    {
+      "n": 8,
+      "slug": "step-08-production",
+      "title": "Watch production",
+      "idea": "Experiments tell you about the past. Score live traffic so you find out when quality moves, not weeks later.",
+      "build": "Scorers running automatically on new reports, and a dashboard of quality and cost per day.",
+      "braintrust": ["Online scoring", "Dashboards", "Monitoring"],
+      "beat": "Quality and cost per day, and an alert when either one moves."
+    },
+    {
+      "n": 9,
+      "slug": "step-09-ship",
+      "title": "Ship it honestly",
+      "idea": "Make all of this routine: account for noise, block regressions, and know what runs before a prompt change goes out.",
+      "build": "A pre-ship check with trials and a regression gate, run through the bt CLI in CI — plus the demo run of show.",
+      "braintrust": ["bt CLI", "CI"],
+      "beat": "This is what runs before anyone touches the prompt."
+    }
+  ]
+}

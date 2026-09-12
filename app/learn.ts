@@ -8,7 +8,7 @@
  *   static  — written to docs/ by `bun run docs:build`, for GitHub Pages, where
  *             links to code point at GitHub instead
  */
-import { readdirSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 export const REPO = 'https://github.com/destinio/evals-by-example'
 
@@ -20,13 +20,32 @@ type Mode = 'server' | 'static'
 const titleOf = (markdown: string, fallback: string) => markdown.match(/^#\s+(.+)$/m)?.[1] ?? fallback
 const slugOf = (file: string) => file.replace(/\.md$/, '')
 
-/** Numbered step files, in order. README is the index; the template isn't a step. */
-export function pages() {
-  return readdirSync(learnDir)
-    .filter((f) => /^step-\d+-.+\.md$/.test(f))
-    .sort()
-    .map((f) => ({ slug: slugOf(f), file: f }))
+type Step = {
+  n: number
+  slug: string
+  title: string
+  idea: string
+  build: string
+  braintrust: string[]
+  beat: string
+  written: boolean
 }
+
+/**
+ * The whole course, in order, from learn/course.json — including steps not written
+ * yet, so a reader can always see where it's going. `written` means the markdown
+ * file exists; otherwise the page shows what's planned.
+ */
+export function pages(): Step[] {
+  const outline = JSON.parse(readFileSync(new URL('course.json', learnDir), 'utf8'))
+  return outline.steps.map((step: Omit<Step, 'written'>) => ({
+    ...step,
+    written: existsSync(new URL(`${step.slug}.md`, learnDir)),
+  }))
+}
+
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
 
 const docHref = (slug: string, mode: Mode) =>
   mode === 'static' ? (slug === 'index' ? 'index.html' : `${slug}.html`) : slug === 'index' ? '/learn' : `/learn/${slug}`
@@ -62,7 +81,7 @@ const shell = (title: string, nav: string, body: string, mode: Mode) => `<!docty
   .bar a { color:var(--soft); text-decoration:none; font-size:.9rem; }
   .bar a:hover { color:var(--ink); }
   .layout { max-width:1040px; margin:0 auto; padding:28px 20px 80px; display:grid;
-            grid-template-columns:210px 1fr; gap:40px; align-items:start; }
+            grid-template-columns:240px 1fr; gap:40px; align-items:start; }
   nav { position:sticky; top:24px; font-size:.9rem; }
   nav h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 10px; }
   nav a { display:block; padding:6px 10px; border-radius:7px; color:var(--ink); text-decoration:none; }
@@ -87,11 +106,56 @@ const shell = (title: string, nav: string, body: string, mode: Mode) => `<!docty
   th { font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--soft); }
   hr { border:0; border-top:1px solid var(--line); margin:28px 0; }
   .plain { white-space:pre-wrap; font-family:ui-monospace, "SF Mono", Menlo, monospace; font-size:.8rem; line-height:1.5; }
+
+  /* nav: every step, planned ones quieter */
+  nav a { display:flex; align-items:center; gap:8px; }
+  nav .num { width:20px; text-align:center; font-variant-numeric:tabular-nums; color:var(--soft); font-size:.8rem; }
+  nav a[aria-current="page"] .num { color:#fff; }
+  nav a.planned { color:var(--soft); }
+  nav a.planned[aria-current="page"] { color:#fff; }
+  nav .soon { margin-left:auto; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em;
+              color:var(--soft); border:1px solid var(--line); border-radius:10px; padding:0 6px; }
+  nav a[aria-current="page"] .soon { color:#fff; border-color:rgba(255,255,255,.4); }
+
+  /* roadmap on the overview */
+  .roadmap { margin:0 0 34px; }
+  .road-intro { margin:0 0 14px; color:var(--soft); }
+  .road-intro strong { color:var(--ink); }
+  .road-list { display:flex; flex-direction:column; gap:8px; }
+  .road-step { display:flex; gap:14px; padding:14px 16px; border:1px solid var(--line); border-radius:12px;
+               text-decoration:none; color:var(--ink); background:var(--card); }
+  .road-step:hover { border-color:var(--brand); }
+  .road-step.is-planned { background:#fdfcfa; }
+  .road-num { flex:none; width:30px; height:30px; border-radius:50%; background:var(--brand); color:#fff;
+              display:grid; place-items:center; font-weight:650; font-size:.9rem; }
+  .is-planned .road-num { background:var(--card); color:var(--soft); border:1.5px dashed #cfc7b8; }
+  .road-body { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .road-head { display:flex; align-items:center; gap:10px; }
+  .status { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; padding:1px 8px; border-radius:10px;
+            background:var(--brand-soft); color:var(--brand); }
+  .is-planned .status { background:#f1ede5; color:var(--soft); }
+  .road-idea { color:var(--soft); font-size:.92rem; line-height:1.55; }
+  .road-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
+  .chip { font-size:.72rem; padding:1px 8px; border-radius:10px; background:var(--code); color:var(--ink);
+          border:1px solid var(--line); }
+
+  /* planned step page */
+  .eyebrow { font-size:.72rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 6px; }
+  .lede { font-size:1.08rem; color:var(--ink); }
+  .planned-card { border:1px dashed #cfc7b8; border-radius:12px; padding:6px 22px 18px; margin:22px 0; background:#fdfcfa; }
+  .planned-card h3 { font-size:.74rem; text-transform:uppercase; letter-spacing:.08em; color:var(--soft); margin:18px 0 6px; }
+  .planned-card p { margin:0; }
+  .note { color:var(--soft); font-size:.92rem; }
+  .pager { display:flex; justify-content:space-between; margin-top:30px; padding-top:16px; border-top:1px solid var(--line); }
+  .pager a { text-decoration:none; }
+
   @media (max-width:760px) { .layout { grid-template-columns:1fr; } nav { position:static; } }
-</style></head>
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐶</text></svg>">
+</head>
 <body>
 <header><div class="bar">
-  <span class="logo">🐾 Evals by example</span>
+  <span class="logo">🐶 Evals by example</span>
   ${mode === 'static' ? `<a href="${REPO}">the repo →</a>` : '<a href="/">← the app</a><a href="/learn">the course</a>'}
 </div></header>
 <div class="layout">
@@ -100,24 +164,90 @@ const shell = (title: string, nav: string, body: string, mode: Mode) => `<!docty
 </div>
 </body></html>`
 
+/** Every step, always — written ones as normal links, planned ones marked as coming. */
 function navHtml(current: string, mode: Mode) {
   const mark = (slug: string) => (slug === current ? ' aria-current="page"' : '')
   const links = pages().map(
-    (p, i) =>
-      `<a href="${docHref(p.slug, mode)}"${mark(p.slug)}>${i + 1}. ${p.slug.replace(/^step-\d+-/, '')}</a>`,
+    (p) =>
+      `<a href="${docHref(p.slug, mode)}"${mark(p.slug)}${p.written ? '' : ' class="planned"'}>` +
+      `<span class="num">${p.n}</span>${escapeHtml(p.title)}${p.written ? '' : '<span class="soon">soon</span>'}</a>`,
   )
-  return `<a href="${docHref('index', mode)}"${mark('index')}>Overview</a>${links.join('')}`
+  return `<a href="${docHref('index', mode)}"${mark('index')}><span class="num">🐶</span>Overview</a>${links.join('')}`
+}
+
+const chips = (items: string[]) => items.map((b) => `<span class="chip">${escapeHtml(b)}</span>`).join('')
+
+/** The map of the whole course, shown at the top of the overview. */
+function roadmapHtml(mode: Mode) {
+  const steps = pages()
+  const done = steps.filter((s) => s.written).length
+  const rows = steps
+    .map(
+      (s) => `
+    <a class="road-step${s.written ? '' : ' is-planned'}" href="${docHref(s.slug, mode)}">
+      <span class="road-num">${s.n}</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>${escapeHtml(s.title)}</strong>
+          <span class="status">${s.written ? 'ready' : 'planned'}</span>
+        </span>
+        <span class="road-idea">${escapeHtml(s.idea)}</span>
+        <span class="road-meta">${chips(s.braintrust)}</span>
+      </span>
+    </a>`,
+    )
+    .join('')
+  return `
+  <section class="roadmap" aria-label="Course roadmap">
+    <p class="road-intro">🐶 <strong>The whole course.</strong> ${done} of ${steps.length} steps written — the rest are
+    planned below and get written as the course is worked through, so they can quote real runs.</p>
+    <div class="road-list">${rows}</div>
+  </section>`
+}
+
+/** A step that isn't written yet: show what it's for, so the path stays visible. */
+function plannedHtml(step: Step, mode: Mode) {
+  const steps = pages()
+  const prev = steps.find((s) => s.n === step.n - 1)
+  const next = steps.find((s) => s.n === step.n + 1)
+  return `
+  <p class="eyebrow">Step ${step.n} of ${steps.length} · planned</p>
+  <h1>${escapeHtml(step.title)}</h1>
+  <p class="lede">${escapeHtml(step.idea)}</p>
+  <div class="planned-card">
+    <h3>What you'll build</h3>
+    <p>${escapeHtml(step.build)}</p>
+    <h3>Braintrust features</h3>
+    <p class="road-meta">${chips(step.braintrust)}</p>
+    <h3>What you'll be able to show</h3>
+    <blockquote><p>“${escapeHtml(step.beat)}”</p></blockquote>
+  </div>
+  <p class="note">🐾 Not written yet. Each step is written as the course is actually worked through, so it
+  describes real scores, real regressions and real false alarms rather than a script guessed in advance.</p>
+  <p class="pager">
+    ${prev ? `<a href="${docHref(prev.slug, mode)}">← ${prev.n}. ${escapeHtml(prev.title)}</a>` : '<span></span>'}
+    ${next ? `<a href="${docHref(next.slug, mode)}">${next.n}. ${escapeHtml(next.title)} →</a>` : ''}
+  </p>`
 }
 
 /** One rendered page: `index` for the course overview, otherwise a step slug. */
 export async function renderDoc(slug: string, mode: Mode): Promise<string | null> {
-  const isIndex = slug === 'index'
-  if (!isIndex && !pages().some((p) => p.slug === slug)) return null
+  if (slug === 'index') {
+    const markdown = await Bun.file(new URL('README.md', learnDir)).text()
+    const body = roadmapHtml(mode) + fixLinks(Bun.markdown.html(markdown), mode)
+    return shell(titleOf(markdown, 'Course'), navHtml('index', mode), body, mode)
+  }
 
-  const file = new URL(isIndex ? 'README.md' : `${slug}.md`, learnDir)
-  const markdown = await Bun.file(file).text()
+  const step = pages().find((p) => p.slug === slug)
+  if (!step) return null
+
+  if (!step.written) {
+    return shell(step.title, navHtml(slug, mode), plannedHtml(step, mode), mode)
+  }
+
+  const markdown = await Bun.file(new URL(`${slug}.md`, learnDir)).text()
   const body = fixLinks(Bun.markdown.html(markdown), mode)
-  return shell(titleOf(markdown, slug), navHtml(slug, mode), body, mode)
+  return shell(titleOf(markdown, step.title), navHtml(slug, mode), body, mode)
 }
 
 export async function learnIndex() {

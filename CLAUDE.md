@@ -23,7 +23,7 @@ Nine steps, each ending in something demonstrable. The full table with demo beat
 8. **Watch production** — scoring live traffic, dashboards
 9. **Ship it honestly** — trials, regression gates, `bt` in CI, and the demo run of show
 
-Step files are written **as each step is worked through**, not in advance, so they can quote real scores and real regressions. Follow `learn/step-template.md`. There's a `/tutor` skill in `.claude/skills/tutor` that carries the teaching approach and per-step checks — read it before guiding any step.
+Step files are written **as each step is worked through**, not in advance, so they can quote real scores and real regressions. `learn/course.json` is the outline — titles, slugs, what each step builds — and the site renders every step from it, showing unwritten ones as *planned*. Name step files by their slug there, follow `learn/step-template.md`, and change the outline first if a step's scope changes. After writing one, `bun run docs:build` and commit `docs/` so the published site keeps up. There's a `/tutor` skill in `.claude/skills/tutor` that carries the teaching approach and per-step checks — read it before guiding any step.
 
 ## Rules that matter
 

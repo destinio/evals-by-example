@@ -22,7 +22,9 @@ for (const file of appFiles) {
     .replace(/\/\*[\s\S]*?\*\//g, '') // block comments
     .replace(/^\s*\/\/.*$/gm, '') // line comments
     .replace(/<!--[\s\S]*?-->/g, '') // html comments
-  if (/braintrust/i.test(code)) problems.push(`app/${file} references braintrust outside comments`)
+  // The package being loaded, not the word — the course pages legitimately talk about Braintrust.
+  const importsIt = /from\s+['"]braintrust['"]|(?:require|import)\(\s*['"]braintrust['"]\s*\)/.test(code)
+  if (importsIt) problems.push(`app/${file} imports braintrust`)
 }
 
 const pkg = await Bun.file(`${root}package.json`).json()

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Judge what code can't · Evals by example</title>
+<style>
+  :root { --ground:#fbf9f5; --card:#fff; --ink:#23201c; --soft:#6f6a62; --line:#e6e1d8;
+          --brand:#1f6f4a; --brand-soft:#eaf3ee; --code:#f4f2ed; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--ink);
+         font:16px/1.7 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--card); border-bottom:1px solid var(--line); }
+  .bar { max-width:1040px; margin:0 auto; padding:16px 20px; display:flex; gap:14px; align-items:baseline; }
+  .logo { font-weight:650; }
+  .bar a { color:var(--soft); text-decoration:none; font-size:.9rem; }
+  .bar a:hover { color:var(--ink); }
+  .layout { max-width:1040px; margin:0 auto; padding:28px 20px 80px; display:grid;
+            grid-template-columns:240px 1fr; gap:40px; align-items:start; }
+  nav { position:sticky; top:24px; font-size:.9rem; }
+  nav h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 10px; }
+  nav a { display:block; padding:6px 10px; border-radius:7px; color:var(--ink); text-decoration:none; }
+  nav a:hover { background:var(--brand-soft); }
+  nav a[aria-current="page"] { background:var(--brand); color:#fff; }
+  article { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:34px 40px; min-width:0; }
+  article > :first-child { margin-top:0; }
+  h1 { font-size:1.7rem; letter-spacing:-.01em; text-wrap:balance; }
+  h2 { font-size:1.2rem; margin-top:34px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  h3 { font-size:1rem; margin-top:26px; }
+  a { color:var(--brand); }
+  code { background:var(--code); padding:2px 5px; border-radius:4px; font-size:.86em;
+         font-family:ui-monospace, "SF Mono", Menlo, monospace; }
+  pre { background:var(--code); border:1px solid var(--line); border-radius:10px; padding:16px 18px;
+        overflow-x:auto; line-height:1.55; }
+  pre code { background:none; padding:0; font-size:.82rem; }
+  blockquote { margin:0; padding:12px 18px; background:var(--brand-soft); border-left:3px solid var(--brand);
+               border-radius:0 8px 8px 0; }
+  blockquote p { margin:0; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; display:block; overflow-x:auto; }
+  th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--soft); }
+  hr { border:0; border-top:1px solid var(--line); margin:28px 0; }
+  .plain { white-space:pre-wrap; font-family:ui-monospace, "SF Mono", Menlo, monospace; font-size:.8rem; line-height:1.5; }
+
+  /* nav: every step, planned ones quieter */
+  nav a { display:flex; align-items:center; gap:8px; }
+  nav .num { width:20px; text-align:center; font-variant-numeric:tabular-nums; color:var(--soft); font-size:.8rem; }
+  nav a[aria-current="page"] .num { color:#fff; }
+  nav a.planned { color:var(--soft); }
+  nav a.planned[aria-current="page"] { color:#fff; }
+  nav .soon { margin-left:auto; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em;
+              color:var(--soft); border:1px solid var(--line); border-radius:10px; padding:0 6px; }
+  nav a[aria-current="page"] .soon { color:#fff; border-color:rgba(255,255,255,.4); }
+
+  /* roadmap on the overview */
+  .roadmap { margin:0 0 34px; }
+  .road-intro { margin:0 0 14px; color:var(--soft); }
+  .road-intro strong { color:var(--ink); }
+  .road-list { display:flex; flex-direction:column; gap:8px; }
+  .road-step { display:flex; gap:14px; padding:14px 16px; border:1px solid var(--line); border-radius:12px;
+               text-decoration:none; color:var(--ink); background:var(--card); }
+  .road-step:hover { border-color:var(--brand); }
+  .road-step.is-planned { background:#fdfcfa; }
+  .road-num { flex:none; width:30px; height:30px; border-radius:50%; background:var(--brand); color:#fff;
+              display:grid; place-items:center; font-weight:650; font-size:.9rem; }
+  .is-planned .road-num { background:var(--card); color:var(--soft); border:1.5px dashed #cfc7b8; }
+  .road-body { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .road-head { display:flex; align-items:center; gap:10px; }
+  .status { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; padding:1px 8px; border-radius:10px;
+            background:var(--brand-soft); color:var(--brand); }
+  .is-planned .status { background:#f1ede5; color:var(--soft); }
+  .road-idea { color:var(--soft); font-size:.92rem; line-height:1.55; }
+  .road-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
+  .chip { font-size:.72rem; padding:1px 8px; border-radius:10px; background:var(--code); color:var(--ink);
+          border:1px solid var(--line); }
+
+  /* planned step page */
+  .eyebrow { font-size:.72rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 6px; }
+  .lede { font-size:1.08rem; color:var(--ink); }
+  .planned-card { border:1px dashed #cfc7b8; border-radius:12px; padding:6px 22px 18px; margin:22px 0; background:#fdfcfa; }
+  .planned-card h3 { font-size:.74rem; text-transform:uppercase; letter-spacing:.08em; color:var(--soft); margin:18px 0 6px; }
+  .planned-card p { margin:0; }
+  .note { color:var(--soft); font-size:.92rem; }
+  .pager { display:flex; justify-content:space-between; margin-top:30px; padding-top:16px; border-top:1px solid var(--line); }
+  .pager a { text-decoration:none; }
+
+  @media (max-width:760px) { .layout { grid-template-columns:1fr; } nav { position:static; } }
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐶</text></svg>">
+</head>
+<body>
+<header><div class="bar">
+  <span class="logo">🐶 Evals by example</span>
+  <a href="https://github.com/destinio/evals-by-example">the repo →</a>
+</div></header>
+<div class="layout">
+  <nav><h2>Steps</h2><a href="index.html"><span class="num">🐶</span>Overview</a><a href="step-01-observe.html"><span class="num">1</span>Observe</a><a href="step-02-score.html" class="planned"><span class="num">2</span>Score one thing<span class="soon">soon</span></a><a href="step-03-hard-cases.html" class="planned"><span class="num">3</span>Keep the hard cases<span class="soon">soon</span></a><a href="step-04-prove-it.html" class="planned"><span class="num">4</span>Fix the prompt, prove it<span class="soon">soon</span></a><a href="step-05-judge.html" aria-current="page" class="planned"><span class="num">5</span>Judge what code can't<span class="soon">soon</span></a><a href="step-06-humans.html" class="planned"><span class="num">6</span>Ask the humans<span class="soon">soon</span></a><a href="step-07-no-deploy.html" class="planned"><span class="num">7</span>Iterate without deploying<span class="soon">soon</span></a><a href="step-08-production.html" class="planned"><span class="num">8</span>Watch production<span class="soon">soon</span></a><a href="step-09-ship.html" class="planned"><span class="num">9</span>Ship it honestly<span class="soon">soon</span></a></nav>
+  <article>
+  <p class="eyebrow">Step 5 of 9 · planned</p>
+  <h1>Judge what code can't</h1>
+  <p class="lede">Some failures don't show up in a regex. Use a model as a judge, then check whether you agree with it.</p>
+  <div class="planned-card">
+    <h3>What you'll build</h3>
+    <p>An LLM-as-judge scorer for buried medication and invented warmth, validated against your own ratings.</p>
+    <h3>Braintrust features</h3>
+    <p class="road-meta"><span class="chip">Scorers</span><span class="chip">autoevals</span><span class="chip">Loop</span></p>
+    <h3>What you'll be able to show</h3>
+    <blockquote><p>“Code catches invented numbers. A judge catches buried medication.”</p></blockquote>
+  </div>
+  <p class="note">🐾 Not written yet. Each step is written as the course is actually worked through, so it
+  describes real scores, real regressions and real false alarms rather than a script guessed in advance.</p>
+  <p class="pager">
+    <a href="step-04-prove-it.html">← 4. Fix the prompt, prove it</a>
+    <a href="step-06-humans.html">6. Ask the humans →</a>
+  </p></article>
+</div>
+</body></html>

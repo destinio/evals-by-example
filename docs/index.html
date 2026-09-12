@@ -14,7 +14,7 @@
   .bar a { color:var(--soft); text-decoration:none; font-size:.9rem; }
   .bar a:hover { color:var(--ink); }
   .layout { max-width:1040px; margin:0 auto; padding:28px 20px 80px; display:grid;
-            grid-template-columns:210px 1fr; gap:40px; align-items:start; }
+            grid-template-columns:240px 1fr; gap:40px; align-items:start; }
   nav { position:sticky; top:24px; font-size:.9rem; }
   nav h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 10px; }
   nav a { display:block; padding:6px 10px; border-radius:7px; color:var(--ink); text-decoration:none; }
@@ -39,16 +39,165 @@
   th { font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--soft); }
   hr { border:0; border-top:1px solid var(--line); margin:28px 0; }
   .plain { white-space:pre-wrap; font-family:ui-monospace, "SF Mono", Menlo, monospace; font-size:.8rem; line-height:1.5; }
+
+  /* nav: every step, planned ones quieter */
+  nav a { display:flex; align-items:center; gap:8px; }
+  nav .num { width:20px; text-align:center; font-variant-numeric:tabular-nums; color:var(--soft); font-size:.8rem; }
+  nav a[aria-current="page"] .num { color:#fff; }
+  nav a.planned { color:var(--soft); }
+  nav a.planned[aria-current="page"] { color:#fff; }
+  nav .soon { margin-left:auto; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em;
+              color:var(--soft); border:1px solid var(--line); border-radius:10px; padding:0 6px; }
+  nav a[aria-current="page"] .soon { color:#fff; border-color:rgba(255,255,255,.4); }
+
+  /* roadmap on the overview */
+  .roadmap { margin:0 0 34px; }
+  .road-intro { margin:0 0 14px; color:var(--soft); }
+  .road-intro strong { color:var(--ink); }
+  .road-list { display:flex; flex-direction:column; gap:8px; }
+  .road-step { display:flex; gap:14px; padding:14px 16px; border:1px solid var(--line); border-radius:12px;
+               text-decoration:none; color:var(--ink); background:var(--card); }
+  .road-step:hover { border-color:var(--brand); }
+  .road-step.is-planned { background:#fdfcfa; }
+  .road-num { flex:none; width:30px; height:30px; border-radius:50%; background:var(--brand); color:#fff;
+              display:grid; place-items:center; font-weight:650; font-size:.9rem; }
+  .is-planned .road-num { background:var(--card); color:var(--soft); border:1.5px dashed #cfc7b8; }
+  .road-body { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .road-head { display:flex; align-items:center; gap:10px; }
+  .status { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; padding:1px 8px; border-radius:10px;
+            background:var(--brand-soft); color:var(--brand); }
+  .is-planned .status { background:#f1ede5; color:var(--soft); }
+  .road-idea { color:var(--soft); font-size:.92rem; line-height:1.55; }
+  .road-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
+  .chip { font-size:.72rem; padding:1px 8px; border-radius:10px; background:var(--code); color:var(--ink);
+          border:1px solid var(--line); }
+
+  /* planned step page */
+  .eyebrow { font-size:.72rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 6px; }
+  .lede { font-size:1.08rem; color:var(--ink); }
+  .planned-card { border:1px dashed #cfc7b8; border-radius:12px; padding:6px 22px 18px; margin:22px 0; background:#fdfcfa; }
+  .planned-card h3 { font-size:.74rem; text-transform:uppercase; letter-spacing:.08em; color:var(--soft); margin:18px 0 6px; }
+  .planned-card p { margin:0; }
+  .note { color:var(--soft); font-size:.92rem; }
+  .pager { display:flex; justify-content:space-between; margin-top:30px; padding-top:16px; border-top:1px solid var(--line); }
+  .pager a { text-decoration:none; }
+
   @media (max-width:760px) { .layout { grid-template-columns:1fr; } nav { position:static; } }
-</style></head>
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐶</text></svg>">
+</head>
 <body>
 <header><div class="bar">
-  <span class="logo">🐾 Evals by example</span>
+  <span class="logo">🐶 Evals by example</span>
   <a href="https://github.com/destinio/evals-by-example">the repo →</a>
 </div></header>
 <div class="layout">
-  <nav><h2>Steps</h2><a href="index.html" aria-current="page">Overview</a><a href="step-01-observe.html">1. observe</a></nav>
-  <article><h1>Learning Braintrust, on a real app</h1>
+  <nav><h2>Steps</h2><a href="index.html" aria-current="page"><span class="num">🐶</span>Overview</a><a href="step-01-observe.html"><span class="num">1</span>Observe</a><a href="step-02-score.html" class="planned"><span class="num">2</span>Score one thing<span class="soon">soon</span></a><a href="step-03-hard-cases.html" class="planned"><span class="num">3</span>Keep the hard cases<span class="soon">soon</span></a><a href="step-04-prove-it.html" class="planned"><span class="num">4</span>Fix the prompt, prove it<span class="soon">soon</span></a><a href="step-05-judge.html" class="planned"><span class="num">5</span>Judge what code can't<span class="soon">soon</span></a><a href="step-06-humans.html" class="planned"><span class="num">6</span>Ask the humans<span class="soon">soon</span></a><a href="step-07-no-deploy.html" class="planned"><span class="num">7</span>Iterate without deploying<span class="soon">soon</span></a><a href="step-08-production.html" class="planned"><span class="num">8</span>Watch production<span class="soon">soon</span></a><a href="step-09-ship.html" class="planned"><span class="num">9</span>Ship it honestly<span class="soon">soon</span></a></nav>
+  <article>
+  <section class="roadmap" aria-label="Course roadmap">
+    <p class="road-intro">🐶 <strong>The whole course.</strong> 1 of 9 steps written — the rest are
+    planned below and get written as the course is worked through, so they can quote real runs.</p>
+    <div class="road-list">
+    <a class="road-step" href="step-01-observe.html">
+      <span class="road-num">1</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Observe</strong>
+          <span class="status">ready</span>
+        </span>
+        <span class="road-idea">You can't improve what you can't see. Instrument the app so every report it writes becomes a trace you can read.</span>
+        <span class="road-meta"><span class="chip">Tracing</span><span class="chip">Logs</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-02-score.html">
+      <span class="road-num">2</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Score one thing</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">Turn a hunch into a number. Write one scorer in plain code and run your first experiment.</span>
+        <span class="road-meta"><span class="chip">Evaluation</span><span class="chip">Experiments</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-03-hard-cases.html">
+      <span class="road-num">3</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Keep the hard cases</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">Four dogs isn't a test set. Build a dataset of deliberately awkward days that every future prompt has to survive.</span>
+        <span class="road-meta"><span class="chip">Datasets</span><span class="chip">Loop</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-04-prove-it.html">
+      <span class="road-num">4</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Fix the prompt, prove it</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">Change the prompt with evidence instead of vibes, and find out what the fix broke.</span>
+        <span class="road-meta"><span class="chip">Experiment comparison</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-05-judge.html">
+      <span class="road-num">5</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Judge what code can't</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">Some failures don't show up in a regex. Use a model as a judge, then check whether you agree with it.</span>
+        <span class="road-meta"><span class="chip">Scorers</span><span class="chip">autoevals</span><span class="chip">Loop</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-06-humans.html">
+      <span class="road-num">6</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Ask the humans</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">The people reading the reports already know which ones are wrong. Capture that and feed it back.</span>
+        <span class="road-meta"><span class="chip">Annotation</span><span class="chip">Human review</span><span class="chip">Feedback</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-07-no-deploy.html">
+      <span class="road-num">7</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Iterate without deploying</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">Prompt changes shouldn't need a code release. Move the prompt into Braintrust and work on it there.</span>
+        <span class="road-meta"><span class="chip">Playground</span><span class="chip">Prompts</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-08-production.html">
+      <span class="road-num">8</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Watch production</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">Experiments tell you about the past. Score live traffic so you find out when quality moves, not weeks later.</span>
+        <span class="road-meta"><span class="chip">Online scoring</span><span class="chip">Dashboards</span><span class="chip">Monitoring</span></span>
+      </span>
+    </a>
+    <a class="road-step is-planned" href="step-09-ship.html">
+      <span class="road-num">9</span>
+      <span class="road-body">
+        <span class="road-head">
+          <strong>Ship it honestly</strong>
+          <span class="status">planned</span>
+        </span>
+        <span class="road-idea">Make all of this routine: account for noise, block regressions, and know what runs before a prompt change goes out.</span>
+        <span class="road-meta"><span class="chip">bt CLI</span><span class="chip">CI</span></span>
+      </span>
+    </a></div>
+  </section><h1>Learning Braintrust, on a real app</h1>
 <p>You've been hired by a dog daycare to make their AI better. This is the path.</p>
 <p>Each step is one idea, one markdown file, and one commit. You write the code; the step file tells you what and why. Nothing here is a finished solution you paste blindly — the point is to leave with the habits, not the repo.</p>
 <h2>Before step 1</h2>

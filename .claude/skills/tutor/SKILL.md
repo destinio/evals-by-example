@@ -36,7 +36,7 @@ ls learn/
 
 **Stop and let them run things.** End a turn with something concrete to do and a question to answer. Debug what actually happened, not what should have.
 
-**Write the step file as you go.** When a step is worked through, capture it in `learn/step-0N-slug.md` following `learn/step-template.md`: why this matters → what you'll add → do it → check yourself → commit → what you still can't do. Real numbers from their runs, not invented ones. These files double as a demo script, and they're served at `/learn` in the browser.
+**Write the step file as you go.** When a step is worked through, capture it in `learn/<slug>.md` — the slug comes from `learn/course.json`, which is the course outline the site, sidebar and roadmap all read (a step with no file shows as *planned*). Follow `learn/step-template.md`: why this matters → what you'll add → do it → check yourself → commit → what you still can't do. Real numbers from their runs, not invented ones. These files double as a demo script, and they're served at `/learn` in the browser.
 
 **Land the lesson on `main`.** Applied work stays on `step-N-slug` branches; the *course* improvements go back to `main` — the write-up, anything that caused confusion, app fixes, nastier test data. Offer this at the end of each step:
 
@@ -47,6 +47,8 @@ git commit -am "step N write-up"
 git checkout step-N-slug && git rebase main
 bun run check:start
 ```
+
+Then rebuild the site so the step flips from *planned* to *ready* online: `bun run docs:build`, commit `docs/`, push.
 
 `check:start` fails if Braintrust leaked into `app/` or `package.json` on `main`. Never merge a step branch into `main` — that would pre-instrument the app and destroy step 1 for the next person.
 
