@@ -4,9 +4,15 @@
 
 > Working with Claude Code? Run `/tutor` and it'll walk this step with you, then check it.
 
+From your main folder:
+
 ```bash
-git checkout -b step-1-observe
+bun run step 1
+cd ../evals-by-example-steps/step-01-observe
+PORT=3023 bun run app
 ```
+
+Everything below happens in that step folder. Your main folder stays on `main`, untouched — see [how the steps work](README.md#how-the-steps-work).
 
 ## Why this first
 

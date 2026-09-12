@@ -19,10 +19,12 @@ You are teaching an experienced TypeScript developer who has never written an ev
 Work it out, then confirm in one line. Don't interrogate them.
 
 ```bash
-git branch --show-current && git log --oneline -5
-grep -rl braintrust app/ 2>/dev/null || echo "app not instrumented — step 1"
+git worktree list                     # the main folder, plus one folder per step started
+git -C "$(git worktree list | tail -1 | cut -d' ' -f1)" log --oneline -5
 ls learn/
 ```
+
+The last worktree listed is usually the step they're on. No step worktrees at all means they haven't started step 1 — point them at `bun run step 1`. Check the instrumented code inside the step folder, not the main folder: the main folder's `app/` is supposed to stay un-instrumented.
 
 `learn/README.md` holds the syllabus; written step files tell you how far they've got. The last row of `git log` usually names the step just finished.
 
@@ -38,15 +40,22 @@ ls learn/
 
 **Write the step file as you go.** When a step is worked through, capture it in `learn/<slug>.md` — the slug comes from `learn/course.json`, which is the course outline the site, sidebar and roadmap all read (a step with no file shows as *planned*). Follow `learn/step-template.md`: why this matters → what you'll add → do it → check yourself → commit → what you still can't do. Real numbers from their runs, not invented ones. These files double as a demo script, and they're served at `/learn` in the browser.
 
-**Land the lesson on `main`.** Applied work stays on `step-N-slug` branches; the *course* improvements go back to `main` — the write-up, anything that caused confusion, app fixes, nastier test data. Offer this at the end of each step:
+**Land the lesson on `main`.** Each step lives in its own worktree (`bun run step N` → `../<repo>-steps/<slug>`, port 3022+N, branched from the previous step). Applied work is committed there; the *course* improvements go back to `main` — the write-up, anything that caused confusion, app fixes, nastier test data. Offer this at the end of each step:
 
 ```bash
-git checkout main
-# add learn/step-0N-*.md and any fixes
-git commit -am "step N write-up"
-git checkout step-N-slug && git rebase main
+# 1. in the step folder
+git add -A && git commit -m "<slug>: what changed"
+
+# 2. in the main folder
+# write learn/<slug>.md and any fixes
+bun run docs:build && git add -A && git commit -m "<slug> write-up"
 bun run check:start
+
+# 3. back in the step folder
+git merge main
 ```
+
+Merge, not rebase — step branches are chained and may be pushed. Never tell them to `git checkout -b` in the main folder.
 
 Then rebuild the site so the step flips from *planned* to *ready* online: `bun run docs:build`, commit `docs/`, push.
 
@@ -102,7 +111,7 @@ Nine steps. Steps 2+ get written as the learner reaches them, so they describe r
 
 Verify rather than congratulate:
 
-- **Step 1:** `grep -n "wrapOpenAI\|initLogger\|traced\|span.log" app/*.ts`. Then ask whether the trace has a nested child with tokens — a flat trace means only one of the two wraps landed.
+- **Step 1:** in the step folder, `grep -n "wrapOpenAI\|initLogger\|traced\|span.log" app/*.ts`. Then ask whether the trace has a nested child with tokens — a flat trace means only one of the two wraps landed.
 - **Step 2+:** run his eval script, read the actual scores, and look for the mistakes below before believing any number.
 
 ## Mistakes to watch for
@@ -118,7 +127,7 @@ Verify rather than congratulate:
 
 - Bun only: `bun run app` (port 3022), `bun add`, `bun:sqlite`, `Bun.markdown`. No Node, tsx or bundler.
 - Code style: single quotes, no semicolons, 2-space indent.
-- `main` must stay free of Braintrust — instrumenting it is step 1, and `bun run check:start` enforces it. Branch per step: `step-N-slug`, off the previous one.
+- `main` must stay free of Braintrust — instrumenting it is step 1, and `bun run check:start` enforces it. One worktree per step via `bun run step N`.
 - Docs are served in the browser: `/learn`, `/learn/<slug>`, and repo files as text at `/source/<path>`.
 - Model access is an OpenAI-compatible router: `NOUS_API_KEY`, ids like `anthropic/claude-haiku-4.5`. Never rename that variable to `ANTHROPIC_API_KEY` — that name is often already exported in a shell, and in Bun a real env var beats `.env`, so the wrong key gets sent.
 - Database `app/data/happytails.db` is gitignored; delete it to reseed.

@@ -1,80 +1,116 @@
 /**
- * Start a step in its own worktree, so several are checked out at once and you
- * can run two versions of the app side by side.
+ * Start a course step in its own worktree.
  *
- *   bun run step 2 score      branch step-2-score, checked out in ../btrust-step-2-score
- *   bun run step --list       every worktree, with its branch and port
+ *   bun run step 1    → branch step-01-observe, folder ../<repo>-steps/step-01-observe, port 3023
+ *   bun run step 2    → branched from step-01-observe, so step 1's work comes with it
+ *   bun run step      → list what's checked out where
+ *
+ * Step names come from learn/course.json, so branches, folders and step files match.
+ *
+ * Why worktrees: your main folder never leaves `main`, so the starting point stays
+ * clean and course improvements can be written there while step work carries on
+ * in its own folder. Each step runs on its own port, so the naive app and a later
+ * step can be open side by side.
  */
-import { existsSync } from 'node:fs'
-import { basename } from 'node:path'
+import { existsSync, mkdirSync } from 'node:fs'
+import { basename, dirname } from 'node:path'
 
-const root = new URL('../', import.meta.url).pathname.replace(/\/$/, '')
-const parent = root.slice(0, root.lastIndexOf('/'))
-const repoName = basename(root)
-
-const run = async (cmd: string[], cwd = root) => {
+const run = async (cmd: string[], cwd?: string) => {
   const proc = Bun.spawn(cmd, { cwd, stdout: 'pipe', stderr: 'pipe' })
   const [out, err] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()])
   await proc.exited
   return { code: proc.exitCode ?? 0, out: out.trim(), err: err.trim() }
 }
 
+// Always work relative to the *main* checkout, even if this is run from inside a step folder.
+const here = new URL('../', import.meta.url).pathname
+const worktrees = (await run(['git', 'worktree', 'list', '--porcelain'], here)).out
+const mainDir = worktrees.match(/^worktree (.+)$/m)?.[1] ?? here.replace(/\/$/, '')
+const stepsDir = `${dirname(mainDir)}/${basename(mainDir)}-steps`
+
+const branches = (await run(['git', 'branch', '--format=%(refname:short)'], mainDir)).out.split('\n')
+
+const course = JSON.parse(await Bun.file(`${mainDir}/learn/course.json`).text()) as {
+  steps: { n: number; slug: string; title: string }[]
+}
+
+const usage = `
+Usage:  bun run step <number>
+
+${course.steps.map((s) => `  bun run step ${s.n}    ${s.title}`).join('\n')}
+`
+
 const args = process.argv.slice(2)
 
-if (args.includes('--list') || args.length === 0) {
-  const { out } = await run(['git', 'worktree', 'list'])
-  console.log(`\n${out}\n`)
-  if (args.length === 0) console.log('Usage: bun run step <number> <slug>    e.g. bun run step 2 score\n')
+if (args.length === 0 || args[0] === '--list') {
+  console.log(`\n${(await run(['git', 'worktree', 'list'], mainDir)).out}`)
+  console.log(usage)
   process.exit(0)
 }
 
-const [number, ...rest] = args
-const slug = rest.join('-').toLowerCase().replace(/[^a-z0-9-]/g, '-')
-if (!/^\d+$/.test(number ?? '') || !slug) {
-  console.error('Usage: bun run step <number> <slug>    e.g. bun run step 2 score')
+const n = Number(args[0])
+const step = course.steps.find((s) => s.n === n)
+if (!step) {
+  console.error(usage)
   process.exit(1)
 }
 
-const branch = `step-${number}-${slug}`
-const dir = `${parent}/${repoName}-${branch}`
-// One port per step, so main on 3022 and step 4 on 3026 can run at the same time.
-const port = 3022 + Number(number)
+const branch = step.slug
+const dir = `${stepsDir}/${branch}`
+const port = 3022 + n
 
 if (existsSync(dir)) {
-  console.log(`\n${dir} already exists. Open it and carry on:\n\n  cd ${dir} && PORT=${port} bun run app\n`)
+  console.log(`\n${branch} is already checked out. Carry on:\n\n  cd ${dir}\n  PORT=${port} bun run app\n`)
   process.exit(0)
 }
 
-const branchExists = (await run(['git', 'rev-parse', '--verify', branch])).code === 0
-const add = branchExists
-  ? ['git', 'worktree', 'add', dir, branch]
-  : ['git', 'worktree', 'add', '-b', branch, dir]
+// Each step builds on the one before it. Step 1 starts from main.
+const previous = course.steps.find((s) => s.n === n - 1)?.slug
+const base = n === 1 ? 'main' : previous && branches.includes(previous) ? previous : undefined
+if (!base) {
+  console.error(`\nNo branch for step ${n - 1} yet. Start that first, so step ${n} has its work to build on.\n`)
+  process.exit(1)
+}
 
-const created = await run(add)
+mkdirSync(stepsDir, { recursive: true })
+
+const add = branches.includes(branch)
+  ? ['git', 'worktree', 'add', dir, branch]
+  : ['git', 'worktree', 'add', '-b', branch, dir, base]
+
+const created = await run(add, mainDir)
 if (created.code !== 0) {
   console.error(created.err || created.out)
   process.exit(1)
 }
 
 // .env and node_modules are gitignored, so a new worktree starts without them.
-if (existsSync(`${root}/.env`)) await Bun.write(`${dir}/.env`, Bun.file(`${root}/.env`))
+if (existsSync(`${mainDir}/.env`)) await Bun.write(`${dir}/.env`, Bun.file(`${mainDir}/.env`))
+console.log('  installing dependencies…')
 await run(['bun', 'install'], dir)
 
 console.log(`
-Worktree ready.
+🐶 Step ${n} — ${step.title} — is ready.
 
-  branch   ${branch}
+  branch   ${branch}   (from ${base})
   folder   ${dir}
   port     ${port}
+
+Work there:
 
   cd ${dir}
   PORT=${port} bun run app
 
-Your main checkout is untouched, so you can run both at once and compare them
-in two browser windows. When the step is done, put the write-up on main:
+Your main folder stays on main. When the step is done:
 
-  cd ${root} && git checkout main
-  # add learn/step-0${number}-${slug}.md, plus anything that confused you
-  git commit -am "step ${number} write-up"
-  cd ${dir} && git rebase main
+  1. In this step folder, commit your work:
+       git add -A && git commit -m "${branch}: ..."
+
+  2. In the main folder, write up what you learned:
+       cd ${mainDir}
+       # learn/${branch}.md, plus anything that confused you
+       bun run docs:build && git add -A && git commit -m "${branch} write-up"
+
+  3. Back in the step folder, pull the improved course in:
+       cd ${dir} && git merge main
 `)

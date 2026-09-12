@@ -24,45 +24,78 @@ It won't write the step for you. You'll get the explanation and the code to appl
 
 ## How the steps work
 
-**`main` is the starting line and stays that way.** The app on `main` is never instrumented, because instrumenting it is step 1. Your applied work lives on step branches:
+Every step gets **its own folder** — a git worktree — and your main folder never leaves `main`.
 
-```bash
-git checkout -b step-1-observe     # start a step
-# ...do the work...
-git add -A && git commit -m "step 1: log every report to Braintrust"
+```
+evals-by-example/                  ← main: the clean starting point, never instrumented
+evals-by-example-steps/
+  step-01-observe/                 ← your step 1 work, port 3023
+  step-02-score/                   ← builds on step 1, port 3024
 ```
 
-Each step branches off the previous one, so your working copy of the app keeps everything you've built.
+Why bother: `main` can't accidentally pick up your step work, you never switch branches mid-thought, and every step runs on its own port — so the naive app on 3022 and your improved one on 3025 can be open side by side.
 
-### Landing what you learned
+### Start a step
 
-`main` should get better every time someone walks this path. When a step is finished, anything that improves the *starting experience* goes back to `main` — the step's write-up, a clearer explanation, a fix to the app, a nastier dog. What never goes back is the applied code: no Braintrust in `app/` on `main`.
-
-```bash
-git checkout main
-# write learn/step-0N-*.md, fix whatever tripped you up
-git commit -am "step N write-up, and the thing that confused me"
-
-git checkout step-N-slug
-git rebase main                    # your work, on top of the improved course
-```
-
-Then check that `main` is still a clean place to start:
+From your main folder:
 
 ```bash
-bun run check:start
+bun run step 1
 ```
 
-It fails if Braintrust has leaked into `app/` or the package list, and warns about leftovers — saved reports in the database, a missing key.
+That creates branch `step-01-observe` in `../evals-by-example-steps/step-01-observe`, copies your `.env` across, installs dependencies, and prints what to run next:
+
+```bash
+cd ../evals-by-example-steps/step-01-observe
+PORT=3023 bun run app
+```
+
+Step 2 onwards branches from the step before it, so your work carries forward. `bun run step 2` refuses to start until step 1 exists. Names come from `learn/course.json`, so the branch, the folder and the step's write-up all share one slug.
+
+### Finish a step
+
+Three moves. The first is your work; the other two make the course better for the next person.
+
+**1. Commit your work — in the step folder.**
+
+```bash
+git add -A && git commit -m "step-01-observe: log every report to Braintrust"
+```
+
+**2. Write up what you learned — in the main folder.** The write-up, a clearer explanation, a fix to the app, a nastier dog: anything that improves the *starting experience*. Never the applied code — `main` stays free of Braintrust.
+
+```bash
+cd ../../evals-by-example
+# write learn/step-01-observe.md, fix whatever tripped you up
+bun run docs:build
+git add -A && git commit -m "step-01-observe write-up"
+bun run check:start                # fails if Braintrust leaked into app/
+```
+
+**3. Pull the improved course into your step — back in the step folder.**
+
+```bash
+cd ../evals-by-example-steps/step-01-observe
+git merge main
+```
+
+`merge`, not `rebase`: your step branches are chained one after another and may be pushed, and merging never rewrites history under you.
+
+### See what you've got
+
+```bash
+bun run step                        # every worktree, its branch and folder
+```
 
 ### Back to the start
 
+Your main folder already *is* the start. To clear the reports it's generated:
+
 ```bash
-git checkout main
-rm app/data/happytails.db          # forget every generated report
+rm app/data/happytails.db           # reseeds on next launch: four dogs, the original prompt
 ```
 
-The database rebuilds on the next launch: four dogs, today's logs, the original prompt. Tag a snapshot before a demo if you want a guaranteed return point — `git tag demo-monday`.
+Each worktree has its own database, so resetting one never touches another. Before a demo, tag a guaranteed return point: `git tag demo-monday`.
 
 ## The steps
 

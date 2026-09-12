@@ -80,7 +80,7 @@ Full descriptions in [learn/README.md](learn/README.md).
 
 ## Learning with an AI assistant
 
-In Claude Code, this repo ships a **`/tutor`** skill. It works out which step you're on from your branch and your code, teaches one idea at a time, and checks your work — it won't do the steps for you. `CLAUDE.md` holds the same ground rules for any agent, so an assistant that's never seen this repo won't hand you finished answers.
+In Claude Code, this repo ships a **`/tutor`** skill. It works out which step you're on from your step folders and your code, teaches one idea at a time, and checks your work — it won't do the steps for you. `CLAUDE.md` holds the same ground rules for any agent, so an assistant that's never seen this repo won't hand you finished answers.
 
 ## How the repo is laid out
 
@@ -88,7 +88,7 @@ In Claude Code, this repo ships a **`/tutor`** skill. It works out which step yo
 |---|---|
 | [`app/`](app/README.md) | The product: Bun server, SQLite, one LLM call. Its README covers routes and schema. |
 | [`learn/`](learn/README.md) | The course. One markdown file per step, also served at `/learn`. |
-| `scripts/` | `setup`, `step` (worktrees), `check:start` |
+| `scripts/` | `install.sh`, `setup`, `step` (worktrees), `check:start`, `docs:build` |
 | `CLAUDE.md` | Context and rules for AI agents working here |
 
 ## Commands
@@ -98,27 +98,36 @@ bun run setup          # first-time setup; --check to verify without prompting
 bun run docs:build     # rebuild the course site into docs/
 bun run app            # the daycare at http://localhost:3022
 bun run dev            # same, with hot reload
-bun run step 2 score   # branch + worktree for a step, on its own port
+bun run step 1         # start step 1 in its own folder and port
+bun run step           # list your step folders
 bun run check:start    # is main still a clean starting point?
 ```
 
-## How the branches work
+## How steps and branches work
 
-**`main` is the starting line and stays un-instrumented** — adding Braintrust is step 1, so it can't already be there. `bun run check:start` enforces that.
+**Your main folder stays on `main`, and `main` stays un-instrumented** — adding Braintrust is step 1, so it can't already be there. `bun run check:start` enforces that.
 
-Your step work lives on branches (`step-1-observe`, `step-2-score`, …), each off the last. What goes *back* to `main` is the course getting better: step write-ups, clearer explanations, app fixes. So the next run through — yours on demo day, or someone else's — starts from everything the last one learned.
+**Each step lives in its own folder** (a git worktree), created with `bun run step`:
 
-`bun run step 4 prompt` puts a step in its own folder and port, so you can run the naive version and the fixed version side by side in two browser windows.
+```
+evals-by-example/                  ← main, port 3022
+evals-by-example-steps/
+  step-01-observe/                 ← port 3023
+  step-02-score/                   ← branched from step 1, port 3024
+```
+
+Your work is committed in the step folder. What goes back to `main` is the course getting better — step write-ups, clearer explanations, app fixes — and each step folder picks those up with `git merge main`. So the next run through, yours on demo day or someone else's, starts from everything the last one learned. Full walkthrough in [learn/README.md](learn/README.md#how-the-steps-work).
 
 ## Starting over
 
+Your main folder is already the start. To clear the reports it has generated:
+
 ```bash
-git checkout main
-rm app/data/happytails.db    # forget every generated report
+rm app/data/happytails.db    # reseeds on next launch: four dogs, the original two-line prompt
 bun run check:start
 ```
 
-The database reseeds on next launch: four dogs, today's logs, the original two-line prompt.
+Each step folder has its own database, so resetting one never touches another.
 
 ## The four dogs
 

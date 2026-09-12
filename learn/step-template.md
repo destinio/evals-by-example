@@ -4,8 +4,12 @@
 
 > Working with Claude Code? Run `/tutor` and it'll walk this step with you, then check it.
 
+From your main folder:
+
 ```bash
-git checkout -b step-N-slug
+bun run step N
+cd ../evals-by-example-steps/step-0N-slug      # slug from learn/course.json; the command prints it
+PORT=302N bun run app
 ```
 
 ## Why this now
@@ -27,7 +31,7 @@ Where to look, and what should be there. Name the specific rows, numbers or scre
 ## Commit
 
 ```bash
-git add -A && git commit -m "step N: what changed"
+git add -A && git commit -m "step-0N-slug: what changed"
 ```
 
 ## What you can do now

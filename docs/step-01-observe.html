@@ -113,8 +113,12 @@
 <blockquote>
 <p>Working with Claude Code? Run <code>/tutor</code> and it'll walk this step with you, then check it.</p>
 </blockquote>
-<pre><code class="language-bash">git checkout -b step-1-observe
+<p>From your main folder:</p>
+<pre><code class="language-bash">bun run step 1
+cd ../evals-by-example-steps/step-01-observe
+PORT=3023 bun run app
 </code></pre>
+<p>Everything below happens in that step folder. Your main folder stays on <code>main</code>, untouched — see <a href="https://github.com/destinio/evals-by-example/blob/main/README.md#how-the-steps-work">how the steps work</a>.</p>
 <h2>Why this first</h2>
 <p>The staff say the reports are &quot;sometimes weird.&quot; Try answering any of these today:</p>
 <ul>
