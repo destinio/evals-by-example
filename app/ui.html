@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Happy Tails</title>
+<style>
+  :root {
+    --ground: #fbf9f5; --card: #fff; --ink: #23201c; --soft: #6f6a62;
+    --line: #e6e1d8; --brand: #1f6f4a; --brand-soft: #eaf3ee; --warn: #a8291f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink);
+    font: 16px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background: var(--card); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 860px; margin: 0 auto; padding: 16px 20px 0; }
+  .top { display: flex; align-items: baseline; gap: 12px; }
+  .logo { font-size: 1.15rem; font-weight: 650; letter-spacing: -.01em; }
+  .tag { color: var(--soft); font-size: .85rem; }
+  nav { display: flex; gap: 4px; margin-top: 14px; }
+  nav button { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent;
+    padding: 8px 12px; cursor: pointer; color: var(--soft); }
+  nav button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--brand); font-weight: 600; }
+  main { max-width: 860px; margin: 0 auto; padding: 26px 20px 70px; }
+  h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--soft); margin: 0 0 12px; }
+  h3 { margin: 0 0 4px; font-size: 1.1rem; }
+
+  .dogs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .dog { display: flex; align-items: center; gap: 10px; text-align: left; font: inherit; cursor: pointer;
+    padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; position: relative; }
+  .dog:hover { border-color: #c9c2b5; }
+  .dog[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); }
+  .dog .emoji { font-size: 1.5rem; line-height: 1; }
+  .dog .name { font-weight: 600; }
+  .dog .breed { color: var(--soft); font-size: .82rem; }
+  .dot { position: absolute; top: 10px; right: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+
+  .panel { margin-top: 24px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 24px 26px; }
+  .panel + .panel { margin-top: 16px; }
+  .rowline { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .when { color: var(--soft); font-size: .82rem; }
+  .empty { color: var(--soft); }
+  .err { color: var(--warn); }
+  .pill { display: inline-block; font-size: .72rem; padding: 2px 8px; border-radius: 20px;
+    background: var(--brand-soft); color: var(--brand); border: 1px solid #cfe3d8; }
+
+  button.action { font: inherit; font-size: .88rem; padding: 7px 13px; border: 1px solid var(--line);
+    background: var(--card); border-radius: 8px; cursor: pointer; }
+  button.action:hover { border-color: #999; }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  button.primary:hover { background: #1a5c3e; }
+  button:disabled { opacity: .55; cursor: default; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  .text h1, .text h2, .text h3 { font-size: .98rem; margin: 18px 0 6px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+  .text > :first-child { margin-top: 0; }
+  .text p { margin: 0 0 12px; }
+  .text ul { margin: 0 0 12px; padding-left: 20px; }
+  .text hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+
+  label { display: block; font-size: .78rem; font-weight: 600; color: var(--soft); margin: 14px 0 4px; }
+  .hint { font-weight: 400; color: var(--soft); font-size: .74rem; }
+  input[type=text], input[type=number], textarea {
+    width: 100%; font: inherit; font-size: .92rem; padding: 8px 10px; color: var(--ink);
+    background: #fdfcfa; border: 1px solid var(--line); border-radius: 8px; }
+  textarea { resize: vertical; min-height: 62px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .82rem; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--line);
+    border-top-color: var(--brand); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  /* "What happened today" — the day log, rendered for owners instead of raw JSON */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .stat { background: #faf8f4; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stat .k { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--soft); }
+  .stat .v { font-weight: 600; font-size: .95rem; }
+  .events { list-style: none; margin: 0 0 4px; padding: 0; }
+  .events li { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0ece4; }
+  .events li:last-child { border-bottom: 0; }
+  .events .ico { width: 22px; text-align: center; flex: none; }
+  .events .detail { color: var(--soft); font-size: .88rem; }
+  .note { background: #fdf6ee; border: 1px solid #f0dfc9; border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+  .note strong { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; color: #8a5a1e; }
+  .note.med { background: var(--brand-soft); border-color: #cfe3d8; }
+  .note.med strong { color: var(--brand); }
+  .friends { color: var(--soft); font-size: .88rem; margin-top: 14px; }
+  @media (max-width: 620px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<!--
+  Both screens in one file: no framework, no build step, one module script.
+
+  Owner portal — what a customer sees. Their dog's report card, and underneath it
+  the same day rendered as facts. Reading the two together is how you catch the
+  model embellishing: Rufus's report describes a sociable afternoon while his
+  tiles say "played: none logged".
+
+  Front desk — what staff see. The global report prompt (one set of instructions
+  for every dog) and an editor for each dog's logged day.
+-->
+<body>
+<header>
+  <div class="bar">
+    <div class="top">
+      <span class="logo">🐾 Happy Tails</span>
+      <span class="tag">Daycare &amp; Boarding</span>
+      <a class="tag" href="/learn" style="margin-left:auto; color:var(--brand)">the course →</a>
+    </div>
+    <nav>
+      <button id="tab-owner" aria-selected="true">Owner portal</button>
+      <button id="tab-desk" aria-selected="false">Front desk</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- OWNER PORTAL -->
+  <section id="view-owner">
+    <h2>Your dogs</h2>
+    <div class="dogs" id="dogs"></div>
+    <section class="panel" id="report"><p class="empty">Pick a dog to see how their day went.</p></section>
+    <section class="panel" id="day" hidden></section>
+  </section>
+
+  <!-- FRONT DESK -->
+  <section id="view-desk" hidden>
+    <h2>Report prompt</h2>
+    <section class="panel">
+      <div class="rowline">
+        <h3>Used for every dog</h3>
+        <span class="pill">global</span>
+      </div>
+      <p class="when">One set of instructions, sent to the model every time a report is written — for Bella, Mochi, Nacho and Rufus alike. Change it here and every report written from now on follows it.</p>
+      <textarea id="prompt-body" rows="9" aria-label="Prompt text"></textarea>
+      <div class="rowline" style="margin-top:14px">
+        <span class="when" id="prompt-status"></span>
+        <button class="action primary" id="prompt-save">Save prompt</button>
+      </div>
+    </section>
+
+    <h2 style="margin-top:34px">Today's log — one dog at a time</h2>
+    <p class="when" style="margin:-6px 0 12px">Pick a dog to correct what was recorded for <em>that dog</em> today. These are the facts their report gets written from.</p>
+    <div class="dogs" id="desk-dogs"></div>
+
+    <section class="panel" id="log-editor"><p class="empty">Pick a dog above to edit their day.</p></section>
+  </section>
+</main>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const today = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+const when = (iso) => new Date(iso).toLocaleString(undefined, { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" });
+
+let dogs = [];
+let ownerDog = null;
+let deskDog = null;
+
+// ---------- tabs ----------
+function showTab(name) {
+  $("tab-owner").setAttribute("aria-selected", String(name === "owner"));
+  $("tab-desk").setAttribute("aria-selected", String(name === "desk"));
+  $("view-owner").hidden = name !== "owner";
+  $("view-desk").hidden = name !== "desk";
+}
+$("tab-owner").onclick = () => showTab("owner");
+$("tab-desk").onclick = () => { showTab("desk"); loadPrompt(); };
+
+// ---------- dog lists ----------
+async function loadDogs() {
+  dogs = await (await fetch("/api/dogs")).json();
+  paintDogs($("dogs"), (dog, btn) => openReport(dog, btn), true);
+  paintDogs($("desk-dogs"), (dog, btn) => openLog(dog, btn), false);
+}
+
+function paintDogs(container, onPick, showDot) {
+  container.replaceChildren();
+  for (const dog of dogs) {
+    const btn = document.createElement("button");
+    btn.className = "dog";
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML =
+      `<span class="emoji">${dog.emoji}</span>` +
+      `<span><span class="name">${dog.name}</span><br><span class="breed">${dog.breed}</span></span>` +
+      (showDot && dog.hasReport ? '<span class="dot" title="Report ready"></span>' : "");
+    btn.onclick = () => {
+      for (const b of container.children) b.setAttribute("aria-pressed", String(b === btn));
+      onPick(dog, btn);
+    };
+    container.append(btn);
+  }
+}
+
+// ---------- owner portal ----------
+async function openReport(dog) {
+  ownerDog = dog;
+  $("report").innerHTML = `<p class="empty"><span class="spinner"></span> Loading ${dog.name}'s report…</p>`;
+  $("day").hidden = true;
+
+  let { report, log } = await (await fetch(`/api/report?dog=${dog.id}`)).json();
+
+  // First visit: write it once, then it's saved for good.
+  if (!report) {
+    $("report").innerHTML = `<p class="empty"><span class="spinner"></span> Writing ${dog.name}'s first report…</p>`;
+    report = await generate(dog);
+    if (!report) return;
+  }
+  paintReport(dog, report);
+  if (log) paintDay(dog, log);
+}
+
+// The day log, as an owner should see it — not as JSON.
+function paintDay(dog, log) {
+  const totalNap = log.naps.reduce((n, x) => n + x.minutes, 0);
+  const totalPlay = log.play.reduce((n, x) => n + x.minutes, 0);
+  const offered = log.meals.reduce((n, m) => n + m.offered_g, 0);
+  const eaten = log.meals.reduce((n, m) => n + m.eaten_g, 0);
+
+  const stat = (k, v) => `<div class="stat"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  const event = (ico, title, detail) =>
+    `<li><span class="ico">${ico}</span><span><span>${title}</span>${detail ? `<br><span class="detail">${detail}</span>` : ""}</span></li>`;
+
+  const timeline = [
+    ...log.meals.map((m) => ({
+      at: m.time,
+      html: event("🍽️", `Meal at ${m.time}`, `ate ${m.eaten_g}g of ${m.offered_g}g offered`),
+    })),
+    ...log.naps.map((n) => ({ at: n.start, html: event("😴", `Nap at ${n.start}`, `${n.minutes} minutes`) })),
+    ...log.meds.map((m) => ({ at: m.time, html: event("💊", `${m.name} ${m.dose}`, `given at ${m.time}`) })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
+
+  const play = log.play.map((p) => event("🎾", p.activity, `${p.minutes} minutes with ${p.with}`));
+
+  $("day").hidden = false;
+  $("day").innerHTML = `
+    <h3>${dog.name}'s day, hour by hour</h3>
+    <p class="when">Everything the front desk recorded · here ${log.stay}</p>
+    <div class="stats">
+      ${stat("Ate", `${eaten}g${offered ? ` of ${offered}g` : ""}`)}
+      ${stat("Napped", totalNap ? `${totalNap} min` : "—")}
+      ${stat("Played", totalPlay ? `${totalPlay} min` : "none logged")}
+      ${stat("Potty breaks", log.potty)}
+    </div>
+    ${timeline.length ? `<ul class="events">${timeline.map((t) => t.html).join("")}</ul>` : ""}
+    ${play.length ? `<ul class="events">${play.join("")}</ul>` : ""}
+    ${log.meds.length ? `<div class="note med"><strong>Medication given</strong>${log.meds.map((m) => `${m.name} ${m.dose} at ${m.time}`).join("<br>")}</div>` : ""}
+    ${log.incidents.length ? `<div class="note"><strong>Notes from staff</strong>${log.incidents.join("<br>")}</div>` : ""}
+    <p class="friends">Also here today: ${log.other_dogs_present.join(", ") || "just ours"}</p>`;
+}
+
+async function generate(dog) {
+  const res = await fetch(`/api/report?dog=${dog.id}`, { method: "POST" });
+  const data = await res.json();
+  if (!res.ok) {
+    $("report").innerHTML = `<p class="err">${data.error ?? "Something went wrong."}</p>`;
+    return null;
+  }
+  await loadDogs();
+  return data.report;
+}
+
+function paintReport(dog, report) {
+  $("report").innerHTML = `
+    <div class="rowline">
+      <div>
+        <h3>${dog.emoji} ${dog.name}'s day</h3>
+        <p class="when">${today} · written ${when(report.createdAt)}</p>
+      </div>
+      <button class="action" id="regen">Regenerate</button>
+    </div>
+    <div class="text">${report.html}</div>`;
+
+  $("regen").onclick = async () => {
+    $("regen").disabled = true;
+    $("regen").textContent = "Writing…";
+    const fresh = await generate(dog);
+    if (fresh) paintReport(dog, fresh);
+  };
+}
+
+// ---------- front desk: day log ----------
+const lines = (arr, fmt) => arr.map(fmt).join("\n");
+const parseLines = (text, fields) =>
+  text.split("\n").map((l) => l.trim()).filter(Boolean).map((line) => {
+    const parts = line.split("|").map((p) => p.trim());
+    const out = {};
+    fields.forEach((f, i) => (out[f.key] = f.num ? Number(parts[i] ?? 0) : (parts[i] ?? "")));
+    return out;
+  });
+
+async function openLog(dog) {
+  deskDog = dog;
+  const log = await (await fetch(`/api/log?dog=${dog.id}`)).json();
+
+  $("log-editor").innerHTML = `
+    <div class="rowline"><h3>${dog.emoji} ${dog.name}</h3><span class="when" id="log-status"></span></div>
+    <div class="grid2">
+      <div><label for="f-stay">Hours here</label><input type="text" id="f-stay" value="${log.stay}"></div>
+      <div><label for="f-potty">Potty breaks</label><input type="number" id="f-potty" value="${log.potty}"></div>
+    </div>
+    <label for="f-meals">Meals <span class="hint">time | offered g | eaten g</span></label>
+    <textarea id="f-meals" rows="2">${lines(log.meals, (m) => `${m.time} | ${m.offered_g} | ${m.eaten_g}`)}</textarea>
+    <label for="f-naps">Naps <span class="hint">start | minutes</span></label>
+    <textarea id="f-naps" rows="2">${lines(log.naps, (n) => `${n.start} | ${n.minutes}`)}</textarea>
+    <label for="f-play">Play <span class="hint">activity | minutes | with</span></label>
+    <textarea id="f-play" rows="3">${lines(log.play, (p) => `${p.activity} | ${p.minutes} | ${p.with}`)}</textarea>
+    <label for="f-meds">Medication <span class="hint">name | dose | time</span></label>
+    <textarea id="f-meds" rows="2">${lines(log.meds, (m) => `${m.name} | ${m.dose} | ${m.time}`)}</textarea>
+    <label for="f-incidents">Incidents <span class="hint">one per line</span></label>
+    <textarea id="f-incidents" rows="2">${log.incidents.join("\n")}</textarea>
+    <label for="f-others">Other dogs in today <span class="hint">comma separated</span></label>
+    <input type="text" id="f-others" value="${log.other_dogs_present.join(", ")}">
+    <div class="rowline" style="margin-top:18px">
+      <span class="when">Saving changes the facts the next report is written from.</span>
+      <button class="action primary" id="log-save">Save log</button>
+    </div>`;
+
+  $("log-save").onclick = async () => {
+    const updated = {
+      ...log,
+      stay: $("f-stay").value,
+      potty: Number($("f-potty").value),
+      meals: parseLines($("f-meals").value, [{ key: "time" }, { key: "offered_g", num: true }, { key: "eaten_g", num: true }]),
+      naps: parseLines($("f-naps").value, [{ key: "start" }, { key: "minutes", num: true }]),
+      play: parseLines($("f-play").value, [{ key: "activity" }, { key: "minutes", num: true }, { key: "with" }]),
+      meds: parseLines($("f-meds").value, [{ key: "name" }, { key: "dose" }, { key: "time" }]),
+      incidents: $("f-incidents").value.split("\n").map((s) => s.trim()).filter(Boolean),
+      other_dogs_present: $("f-others").value.split(",").map((s) => s.trim()).filter(Boolean),
+    };
+    await fetch(`/api/log?dog=${dog.id}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(updated),
+    });
+    $("log-status").textContent = "Saved — regenerate the report to use it";
+  };
+}
+
+// ---------- front desk: the prompt ----------
+async function loadPrompt() {
+  const prompt = await (await fetch("/api/prompt")).json();
+  $("prompt-body").value = prompt.body;
+  $("prompt-status").textContent = "";
+}
+
+$("prompt-save").onclick = async () => {
+  await fetch("/api/prompt", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ body: $("prompt-body").value }),
+  });
+  $("prompt-status").textContent = "Saved — regenerate a report to see the difference";
+};
+
+await loadDogs();
+</script>
+</body>
+</html>

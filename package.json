@@ -1,0 +1,21 @@
+{
+  "name": "evals-by-example",
+  "version": "1.0.0",
+  "description": "Learn LLM evals by fixing an app that's quietly lying to its customers.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "app": "bun app/server.ts",
+    "dev": "bun --hot app/server.ts",
+    "check:start": "bun scripts/check-start.ts",
+    "setup": "bun scripts/setup.ts",
+    "step": "bun scripts/step.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "openai": "^7.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^7.0.2"
+  }
+}
