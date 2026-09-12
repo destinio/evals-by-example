@@ -1,8 +1,12 @@
-# Happy Tails
+<p align="center">
+  <img src="assets/header.png" alt="evals by example — learn LLM evals by fixing an app that's quietly lying to its customers" width="100%">
+</p>
+
+# Evals by example
 
 **Learn LLM evals by fixing an app that's quietly lying to its customers.**
 
-Happy Tails is a dog daycare. The front desk logs each dog's day; the site shows the owner a report card written by an LLM. It works, it looks fine, and nobody has ever checked whether it's true.
+The example app is **Happy Tails**, a dog daycare. The front desk logs each dog's day; the site shows the owner a report card written by an LLM. It works, it looks fine, and nobody has ever checked whether it's true.
 
 Rufus ate nothing, never played, and hid under a bench all morning. His report tells his owner he had a lovely, sociable day.
 
@@ -23,7 +27,7 @@ bun run app
 
 Open **http://localhost:3022**, click **Rufus**, and read his report against the timeline underneath it. That gap is the whole project.
 
-Then open **http://localhost:3022/learn** — the course is served beside the app — and start at step 1.
+Then open **http://localhost:3022/learn** — the course is served beside the app — and start at step 1. It also reads online at **[destinio.github.io/evals-by-example](https://destinio.github.io/evals-by-example/)**.
 
 ### What you need
 

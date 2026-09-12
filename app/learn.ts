@@ -1,51 +1,55 @@
 /**
  * Course scaffolding, not part of the daycare product.
  *
- * Serves the markdown in `learn/` as browsable pages at /learn, so you can read a
- * step beside the app it's changing. Source files referenced by the docs are
- * served as plain text at /source/<path>, which makes "open app/report.ts" a link
- * rather than a trip back to the editor.
+ * Renders the markdown in `learn/` as browsable pages, so a step can be read
+ * beside the app it's changing. Two modes:
+ *
+ *   server  — served at /learn while the app runs; repo files readable at /source
+ *   static  — written to docs/ by `bun run docs:build`, for GitHub Pages, where
+ *             links to code point at GitHub instead
  */
 import { readdirSync } from 'node:fs'
+
+export const REPO = 'https://github.com/destinio/evals-by-example'
 
 const root = new URL('../', import.meta.url)
 const learnDir = new URL('learn/', root)
 
-const titleOf = (markdown: string, fallback: string) =>
-  markdown.match(/^#\s+(.+)$/m)?.[1] ?? fallback
+type Mode = 'server' | 'static'
 
+const titleOf = (markdown: string, fallback: string) => markdown.match(/^#\s+(.+)$/m)?.[1] ?? fallback
 const slugOf = (file: string) => file.replace(/\.md$/, '')
 
 /** Numbered step files, in order. README is the index; the template isn't a step. */
-function pages() {
+export function pages() {
   return readdirSync(learnDir)
     .filter((f) => /^step-\d+-.+\.md$/.test(f))
     .sort()
     .map((f) => ({ slug: slugOf(f), file: f }))
 }
 
-/**
- * Markdown links point at files on disk. Rewrite them for the browser:
- * another doc becomes a /learn page, and any other repo file becomes /source.
- */
-function fixLinks(html: string) {
+const docHref = (slug: string, mode: Mode) =>
+  mode === 'static' ? (slug === 'index' ? 'index.html' : `${slug}.html`) : slug === 'index' ? '/learn' : `/learn/${slug}`
+
+const codeHref = (path: string, mode: Mode) =>
+  mode === 'static' ? `${REPO}/blob/main/${path}` : `/source/${path}`
+
+/** Markdown links point at files on disk; rewrite them for wherever this is being read. */
+function fixLinks(html: string, mode: Mode) {
   return html.replace(/href="([^"]+)"/g, (whole, href: string) => {
     if (/^(https?:|#|\/)/.test(href)) return whole
-    if (href === 'learn/README.md' || href === 'README.md') return 'href="/learn"'
-    if (href.endsWith('.md')) {
-      const name = href.replace(/^learn\//, '')
-      return name.startsWith('..') || href.startsWith('app/') || href === 'CLAUDE.md'
-        ? `href="/source/${href}"`
-        : `href="/learn/${slugOf(name)}"`
+    if (href === 'learn/README.md' || href === 'README.md') return `href="${docHref('index', mode)}"`
+    if (href.endsWith('.md') && !href.startsWith('app/') && href !== 'CLAUDE.md') {
+      return `href="${docHref(slugOf(href.replace(/^learn\//, '')), mode)}"`
     }
-    return `href="/source/${href.replace(/^\.\//, '')}"`
+    return `href="${codeHref(href.replace(/^\.\//, ''), mode)}"`
   })
 }
 
-const shell = (title: string, nav: string, body: string) => `<!doctype html>
+const shell = (title: string, nav: string, body: string, mode: Mode) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title} · Happy Tails</title>
+<title>${title} · Evals by example</title>
 <style>
   :root { --ground:#fbf9f5; --card:#fff; --ink:#23201c; --soft:#6f6a62; --line:#e6e1d8;
           --brand:#1f6f4a; --brand-soft:#eaf3ee; --code:#f4f2ed; }
@@ -87,9 +91,8 @@ const shell = (title: string, nav: string, body: string) => `<!doctype html>
 </style></head>
 <body>
 <header><div class="bar">
-  <span class="logo">🐾 Happy Tails</span>
-  <a href="/">← the app</a>
-  <a href="/learn">the course</a>
+  <span class="logo">🐾 Evals by example</span>
+  ${mode === 'static' ? `<a href="${REPO}">the repo →</a>` : '<a href="/">← the app</a><a href="/learn">the course</a>'}
 </div></header>
 <div class="layout">
   <nav><h2>Steps</h2>${nav}</nav>
@@ -97,40 +100,50 @@ const shell = (title: string, nav: string, body: string) => `<!doctype html>
 </div>
 </body></html>`
 
-function navHtml(current: string) {
+function navHtml(current: string, mode: Mode) {
   const mark = (slug: string) => (slug === current ? ' aria-current="page"' : '')
   const links = pages().map(
-    (p, i) => `<a href="/learn/${p.slug}"${mark(p.slug)}>${i + 1}. ${p.slug.replace(/^step-\d+-/, '')}</a>`,
+    (p, i) =>
+      `<a href="${docHref(p.slug, mode)}"${mark(p.slug)}>${i + 1}. ${p.slug.replace(/^step-\d+-/, '')}</a>`,
   )
-  return `<a href="/learn"${mark('index')}>Overview</a>${links.join('')}`
+  return `<a href="${docHref('index', mode)}"${mark('index')}>Overview</a>${links.join('')}`
 }
 
-async function renderMarkdown(file: URL, fallbackTitle: string) {
+/** One rendered page: `index` for the course overview, otherwise a step slug. */
+export async function renderDoc(slug: string, mode: Mode): Promise<string | null> {
+  const isIndex = slug === 'index'
+  if (!isIndex && !pages().some((p) => p.slug === slug)) return null
+
+  const file = new URL(isIndex ? 'README.md' : `${slug}.md`, learnDir)
   const markdown = await Bun.file(file).text()
-  return { title: titleOf(markdown, fallbackTitle), html: fixLinks(Bun.markdown.html(markdown)) }
+  const body = fixLinks(Bun.markdown.html(markdown), mode)
+  return shell(titleOf(markdown, slug), navHtml(slug, mode), body, mode)
 }
 
 export async function learnIndex() {
-  const { title, html } = await renderMarkdown(new URL('README.md', learnDir), 'Learn')
-  return new Response(shell(title, navHtml('index'), html), { headers: { 'content-type': 'text/html' } })
+  return new Response((await renderDoc('index', 'server'))!, { headers: { 'content-type': 'text/html' } })
 }
 
 export async function learnPage(slug: string) {
-  if (!pages().some((p) => p.slug === slug)) return new Response('No such step', { status: 404 })
-  const { title, html } = await renderMarkdown(new URL(`${slug}.md`, learnDir), slug)
-  return new Response(shell(title, navHtml(slug), html), { headers: { 'content-type': 'text/html' } })
+  const html = await renderDoc(slug, 'server')
+  return html
+    ? new Response(html, { headers: { 'content-type': 'text/html' } })
+    : new Response('No such step', { status: 404 })
 }
 
 /** Read a repo file as plain text, so the docs can link to the code they discuss. */
 export async function sourceFile(path: string) {
   // Only files the course talks about, and nothing climbing out of the repo.
-  if (!/^(app|learn)\/[\w.-]+$/.test(path) && !/^(CLAUDE|README)\.md$/.test(path)) {
+  if (!/^(app|learn|scripts)\/[\w.-]+$/.test(path) && !/^(CLAUDE|README)\.md$/.test(path)) {
     return new Response('Not available', { status: 404 })
   }
   const file = Bun.file(new URL(path, root))
   if (!(await file.exists())) return new Response('Not found', { status: 404 })
 
   const text = await file.text()
-  const body = `<h1>${path}</h1><div class="plain">${text.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!)}</div>`
-  return new Response(shell(path, navHtml(''), body), { headers: { 'content-type': 'text/html' } })
+  const escaped = text.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!)
+  const body = `<h1>${path}</h1><div class="plain">${escaped}</div>`
+  return new Response(shell(path, navHtml('', 'server'), body, 'server'), {
+    headers: { 'content-type': 'text/html' },
+  })
 }

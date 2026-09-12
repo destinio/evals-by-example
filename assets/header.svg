@@ -1,0 +1,45 @@
+<svg viewBox="0 0 1200 340" width="1200" height="340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="evals by example — learn LLM evals by fixing an app that's quietly lying to its customers">
+  <rect width="1200" height="340" fill="#fbf9f5"/>
+
+  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+    <text x="64" y="122" font-size="44" font-weight="700" fill="#23201c" letter-spacing="-.5">evals by example</text>
+    <text x="66" y="160" font-size="19" fill="#6f6a62">learn LLM evals by fixing an app</text>
+    <text x="66" y="188" font-size="19" fill="#6f6a62">that&#8217;s quietly lying to its customers</text>
+    <text x="66" y="252" font-size="16" fill="#1f6f4a">Happy Tails &#183; Braintrust &#183; Bun &#183; nine steps</text>
+  </g>
+
+  <g transform="translate(636,118)">
+    <rect width="500" height="200" rx="14" fill="#14231c"/>
+    <g font-family="Menlo, Consolas, monospace" font-size="14.5">
+      <text x="26" y="62" fill="#7d9b8e">$ bun run eval</text>
+      <text x="26" y="100" fill="#e6ece9">rufus</text>
+      <text x="150" y="100" fill="#ef8279">&#10007; 0.25</text>
+      <text x="232" y="100" fill="#7d9b8e">&#8220;played with all his friends&#8221;</text>
+      <text x="150" y="126" fill="#7d9b8e" font-size="13">log says: played 0 minutes</text>
+      <text x="26" y="166" fill="#7d9b8e">score</text>
+      <text x="150" y="166" fill="#e6ece9">0.71</text>
+      <text x="232" y="166" fill="#7d9b8e">4 cases &#183; $0.004</text>
+    </g>
+
+    <!-- paws hooked over the terminal's top edge, just outside the head -->
+    <g fill="#d7a473">
+      <rect x="278" y="-18" width="38" height="24" rx="12"/>
+      <rect x="386" y="-18" width="38" height="24" rx="12"/>
+    </g>
+
+    <!-- the dog: floppy ears and a snout, plus an antenna and one square eye -->
+    <g transform="translate(300,-110)">
+      <line x1="56" y1="28" x2="56" y2="4" stroke="#1f6f4a" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="56" cy="2" r="6" fill="#4ec39c"/>
+      <circle cx="56" cy="2" r="12" fill="#4ec39c" opacity=".22"/>
+      <path d="M18 44 q-18 8 -13 48 q3 24 20 21 z" fill="#b9885c"/>
+      <path d="M94 44 q18 8 13 48 q-3 24 -20 21 z" fill="#b9885c"/>
+      <rect x="14" y="28" width="84" height="74" rx="24" fill="#d7a473"/>
+      <circle cx="40" cy="62" r="7.5" fill="#2a211b"/>
+      <rect x="64" y="54" width="16" height="16" rx="4" fill="#2a211b"/>
+      <circle cx="72" cy="62" r="3.5" fill="#4ec39c"/>
+      <ellipse cx="56" cy="88" rx="21" ry="14" fill="#f0dcc4"/>
+      <path d="M49 83 h14 l-7 8 z" fill="#2a211b"/>
+    </g>
+  </g>
+</svg>

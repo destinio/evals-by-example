@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning Braintrust, on a real app · Evals by example</title>
+<style>
+  :root { --ground:#fbf9f5; --card:#fff; --ink:#23201c; --soft:#6f6a62; --line:#e6e1d8;
+          --brand:#1f6f4a; --brand-soft:#eaf3ee; --code:#f4f2ed; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--ink);
+         font:16px/1.7 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--card); border-bottom:1px solid var(--line); }
+  .bar { max-width:1040px; margin:0 auto; padding:16px 20px; display:flex; gap:14px; align-items:baseline; }
+  .logo { font-weight:650; }
+  .bar a { color:var(--soft); text-decoration:none; font-size:.9rem; }
+  .bar a:hover { color:var(--ink); }
+  .layout { max-width:1040px; margin:0 auto; padding:28px 20px 80px; display:grid;
+            grid-template-columns:210px 1fr; gap:40px; align-items:start; }
+  nav { position:sticky; top:24px; font-size:.9rem; }
+  nav h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 10px; }
+  nav a { display:block; padding:6px 10px; border-radius:7px; color:var(--ink); text-decoration:none; }
+  nav a:hover { background:var(--brand-soft); }
+  nav a[aria-current="page"] { background:var(--brand); color:#fff; }
+  article { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:34px 40px; min-width:0; }
+  article > :first-child { margin-top:0; }
+  h1 { font-size:1.7rem; letter-spacing:-.01em; text-wrap:balance; }
+  h2 { font-size:1.2rem; margin-top:34px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  h3 { font-size:1rem; margin-top:26px; }
+  a { color:var(--brand); }
+  code { background:var(--code); padding:2px 5px; border-radius:4px; font-size:.86em;
+         font-family:ui-monospace, "SF Mono", Menlo, monospace; }
+  pre { background:var(--code); border:1px solid var(--line); border-radius:10px; padding:16px 18px;
+        overflow-x:auto; line-height:1.55; }
+  pre code { background:none; padding:0; font-size:.82rem; }
+  blockquote { margin:0; padding:12px 18px; background:var(--brand-soft); border-left:3px solid var(--brand);
+               border-radius:0 8px 8px 0; }
+  blockquote p { margin:0; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; display:block; overflow-x:auto; }
+  th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--soft); }
+  hr { border:0; border-top:1px solid var(--line); margin:28px 0; }
+  .plain { white-space:pre-wrap; font-family:ui-monospace, "SF Mono", Menlo, monospace; font-size:.8rem; line-height:1.5; }
+  @media (max-width:760px) { .layout { grid-template-columns:1fr; } nav { position:static; } }
+</style></head>
+<body>
+<header><div class="bar">
+  <span class="logo">🐾 Evals by example</span>
+  <a href="https://github.com/destinio/evals-by-example">the repo →</a>
+</div></header>
+<div class="layout">
+  <nav><h2>Steps</h2><a href="index.html" aria-current="page">Overview</a><a href="step-01-observe.html">1. observe</a></nav>
+  <article><h1>Learning Braintrust, on a real app</h1>
+<p>You've been hired by a dog daycare to make their AI better. This is the path.</p>
+<p>Each step is one idea, one markdown file, and one commit. You write the code; the step file tells you what and why. Nothing here is a finished solution you paste blindly — the point is to leave with the habits, not the repo.</p>
+<h2>Before step 1</h2>
+<ol>
+<li>The app runs (<code>bun run app</code>) and you've read a couple of report cards.</li>
+<li><code>.env</code> has <code>NOUS_API_KEY</code>. Get a free Braintrust account and add <code>BRAINTRUST_API_KEY</code> too — step 1 needs it.</li>
+<li>You've seen the problem: click <strong>Rufus</strong>, compare his report to the timeline underneath.</li>
+</ol>
+<h2>Stuck? Ask the tutor</h2>
+<p>In a Claude Code session in this repo:</p>
+<pre><code>/tutor
+</code></pre>
+<p>The tutor figures out where you are, explains the next idea, and checks your work when you say a step is done. Good moments to call it: &quot;what's next&quot;, &quot;check my work&quot;, &quot;why isn't this showing up in Braintrust&quot;, or any time a word like <em>span</em> or <em>scorer</em> stops making sense.</p>
+<p>It won't write the step for you. You'll get the explanation and the code to apply yourself, one idea at a time.</p>
+<h2>How the steps work</h2>
+<p><strong><code>main</code> is the starting line and stays that way.</strong> The app on <code>main</code> is never instrumented, because instrumenting it is step 1. Your applied work lives on step branches:</p>
+<pre><code class="language-bash">git checkout -b step-1-observe     # start a step
+# ...do the work...
+git add -A &amp;&amp; git commit -m &quot;step 1: log every report to Braintrust&quot;
+</code></pre>
+<p>Each step branches off the previous one, so your working copy of the app keeps everything you've built.</p>
+<h3>Landing what you learned</h3>
+<p><code>main</code> should get better every time someone walks this path. When a step is finished, anything that improves the <em>starting experience</em> goes back to <code>main</code> — the step's write-up, a clearer explanation, a fix to the app, a nastier dog. What never goes back is the applied code: no Braintrust in <code>app/</code> on <code>main</code>.</p>
+<pre><code class="language-bash">git checkout main
+# write learn/step-0N-*.md, fix whatever tripped you up
+git commit -am &quot;step N write-up, and the thing that confused me&quot;
+
+git checkout step-N-slug
+git rebase main                    # your work, on top of the improved course
+</code></pre>
+<p>Then check that <code>main</code> is still a clean place to start:</p>
+<pre><code class="language-bash">bun run check:start
+</code></pre>
+<p>It fails if Braintrust has leaked into <code>app/</code> or the package list, and warns about leftovers — saved reports in the database, a missing key.</p>
+<h3>Back to the start</h3>
+<pre><code class="language-bash">git checkout main
+rm app/data/happytails.db          # forget every generated report
+</code></pre>
+<p>The database rebuilds on the next launch: four dogs, today's logs, the original prompt. Tag a snapshot before a demo if you want a guaranteed return point — <code>git tag demo-monday</code>.</p>
+<h2>The steps</h2>
+<p>Nine steps, each one leaving you able to <em>show</em> something, not just know it. The last column is the moment you'd put on a screen for your team.</p>
+<table>
+<thead>
+<tr><th>#</th><th>Step</th><th>What you build</th><th>Braintrust</th><th>The demo beat</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><strong><a href="step-01-observe.html">Observe</a></strong> ✅</td><td><code>wrapOpenAI</code> + <code>traced</code> in the app</td><td>Tracing, Instrumentation</td><td>&quot;Every report we've ever written, with its cost and the data behind it&quot;</td></tr>
+<tr><td>2</td><td><strong>Score one thing</strong></td><td>A scorer in plain code, and your first <code>Eval()</code></td><td>Evaluation</td><td>&quot;67%. And here's the exact row that failed&quot;</td></tr>
+<tr><td>3</td><td><strong>Keep the hard cases</strong></td><td>A dataset: the four dogs plus deliberately nasty days</td><td>Datasets</td><td>&quot;The awkward days are permanent now — nothing can quietly break them again&quot;</td></tr>
+<tr><td>4</td><td><strong>Fix the prompt, prove it</strong></td><td>A second prompt version and a second experiment</td><td>Experiment comparison</td><td>&quot;v1 against v2, row by row, including what got <em>worse</em>&quot;</td></tr>
+<tr><td>5</td><td><strong>Judge what code can't</strong></td><td>An LLM-as-judge scorer, checked against your own opinion</td><td>Scorers, Loop</td><td>&quot;Code catches invented numbers. A judge catches buried medication&quot;</td></tr>
+<tr><td>6</td><td><strong>Ask the humans</strong></td><td>Thumbs and staff corrections in the app, flowing back</td><td>Annotation, human review</td><td>&quot;A complaint on Tuesday becomes a test case on Wednesday&quot;</td></tr>
+<tr><td>7</td><td><strong>Iterate without deploying</strong></td><td>The prompt pulled from Braintrust instead of SQLite</td><td>Playground, Prompts</td><td>&quot;Change the prompt, try it on 20 real days, ship it — no deploy&quot;</td></tr>
+<tr><td>8</td><td><strong>Watch production</strong></td><td>Scorers running on live traffic, and a dashboard</td><td>Observation, Deployment</td><td>&quot;Quality and cost per day, and an alert when either moves&quot;</td></tr>
+<tr><td>9</td><td><strong>Ship it honestly</strong></td><td>A pre-ship check you'd actually run</td><td><code>bt</code> CLI, CI</td><td>&quot;What runs before anyone changes the prompt&quot;</td></tr>
+</tbody>
+</table>
+<p>Steps 2 onward are written as you reach them, so each one describes what actually happened in your runs — real scores, real regressions, the false alarm your first scorer raises — rather than a script written in advance.</p>
+<h3>Where it's going</h3>
+<p>Steps 1–4 are the core loop and stand alone: see it, score it, keep the hard cases, prove a change helped. Steps 5–6 handle what code can't judge and where human opinion enters. Steps 7–8 are what your colleagues will care about most — prompt changes that aren't deploys, and production that scores itself. Step 9 makes it routine, and ends by mapping all of it back to whatever prompt you're really responsible for.</p>
+<h2>The words</h2>
+<p>You'll hit these constantly, and they're easy to confuse.</p>
+<table>
+<thead>
+<tr><th>Term</th><th>What it is</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Span</strong></td><td>One recorded step — a function call, a model call.</td></tr>
+<tr><td><strong>Trace</strong></td><td>A span plus everything nested inside it. One report card is one trace.</td></tr>
+<tr><td><strong>Log</strong></td><td>A trace from real use. Continuous, unpredictable, no right answer attached.</td></tr>
+<tr><td><strong>Dataset</strong></td><td>A fixed set of test cases, usually an input and some notion of what good looks like.</td></tr>
+<tr><td><strong>Task</strong></td><td>The code under test. Here: <code>writeReport()</code>.</td></tr>
+<tr><td><strong>Scorer</strong></td><td>A function that grades one output, 0 to 1. Plain code, or another model.</td></tr>
+<tr><td><strong>Experiment</strong></td><td>One run of the task over the dataset with the scorers applied. Has an average score, and can be compared to any earlier run.</td></tr>
+</tbody>
+</table>
+<p><strong>Logs are what happened. Experiments are what would happen if.</strong> They're different screens in Braintrust, and looking in the wrong one is the most common early confusion.</p>
+<h2>The demo at the end</h2>
+<p>The point of the course is a working system; the point of the <em>repo</em> is that you can show it. Each step file ends with what you can now demonstrate, and step 9 assembles those into <code>learn/demo.md</code> — a run of show with timings, the commands to type, and the lines to say.</p>
+<p>Two things make the demo land, and both are decisions made early:</p>
+<ul>
+<li><strong>Rufus.</strong> A quiet, sad little day that the model turns into a social triumph. Everyone in the room sees the problem in five seconds without knowing anything about evals.</li>
+<li><strong>The numbers move.</strong> The scores in your demo are real runs from this repo, not slides. The regressions are real too — including the one in step 4 where the fix breaks something else.</li>
+</ul>
+<h2>The loop you're building toward</h2>
+<ol>
+<li><strong>Log</strong> what production does.</li>
+<li><strong>Find</strong> the bad ones.</li>
+<li><strong>Turn them into a dataset</strong> with a notion of correct.</li>
+<li><strong>Run an experiment</strong> — that number is your baseline.</li>
+<li><strong>Change the prompt</strong>, run again, compare.</li>
+<li><strong>Ship if it went up</strong>, and keep the dataset forever, so the next change can't quietly break what you just fixed.</li>
+</ol>
+<p>Step 5 is the payoff. Without it, every prompt edit is a coin flip — and the classic failure is fixing one complaint while breaking three things nobody retested.</p>
+</article>
+</div>
+</body></html>

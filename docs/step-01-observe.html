@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Step 1 — Observe · Evals by example</title>
+<style>
+  :root { --ground:#fbf9f5; --card:#fff; --ink:#23201c; --soft:#6f6a62; --line:#e6e1d8;
+          --brand:#1f6f4a; --brand-soft:#eaf3ee; --code:#f4f2ed; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--ink);
+         font:16px/1.7 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--card); border-bottom:1px solid var(--line); }
+  .bar { max-width:1040px; margin:0 auto; padding:16px 20px; display:flex; gap:14px; align-items:baseline; }
+  .logo { font-weight:650; }
+  .bar a { color:var(--soft); text-decoration:none; font-size:.9rem; }
+  .bar a:hover { color:var(--ink); }
+  .layout { max-width:1040px; margin:0 auto; padding:28px 20px 80px; display:grid;
+            grid-template-columns:210px 1fr; gap:40px; align-items:start; }
+  nav { position:sticky; top:24px; font-size:.9rem; }
+  nav h2 { font-size:.7rem; text-transform:uppercase; letter-spacing:.09em; color:var(--soft); margin:0 0 10px; }
+  nav a { display:block; padding:6px 10px; border-radius:7px; color:var(--ink); text-decoration:none; }
+  nav a:hover { background:var(--brand-soft); }
+  nav a[aria-current="page"] { background:var(--brand); color:#fff; }
+  article { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:34px 40px; min-width:0; }
+  article > :first-child { margin-top:0; }
+  h1 { font-size:1.7rem; letter-spacing:-.01em; text-wrap:balance; }
+  h2 { font-size:1.2rem; margin-top:34px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  h3 { font-size:1rem; margin-top:26px; }
+  a { color:var(--brand); }
+  code { background:var(--code); padding:2px 5px; border-radius:4px; font-size:.86em;
+         font-family:ui-monospace, "SF Mono", Menlo, monospace; }
+  pre { background:var(--code); border:1px solid var(--line); border-radius:10px; padding:16px 18px;
+        overflow-x:auto; line-height:1.55; }
+  pre code { background:none; padding:0; font-size:.82rem; }
+  blockquote { margin:0; padding:12px 18px; background:var(--brand-soft); border-left:3px solid var(--brand);
+               border-radius:0 8px 8px 0; }
+  blockquote p { margin:0; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; display:block; overflow-x:auto; }
+  th, td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--soft); }
+  hr { border:0; border-top:1px solid var(--line); margin:28px 0; }
+  .plain { white-space:pre-wrap; font-family:ui-monospace, "SF Mono", Menlo, monospace; font-size:.8rem; line-height:1.5; }
+  @media (max-width:760px) { .layout { grid-template-columns:1fr; } nav { position:static; } }
+</style></head>
+<body>
+<header><div class="bar">
+  <span class="logo">🐾 Evals by example</span>
+  <a href="https://github.com/destinio/evals-by-example">the repo →</a>
+</div></header>
+<div class="layout">
+  <nav><h2>Steps</h2><a href="index.html">Overview</a><a href="step-01-observe.html" aria-current="page">1. observe</a></nav>
+  <article><h1>Step 1 — Observe</h1>
+<p><strong>The idea:</strong> you can't improve what you can't see. Before any prompt work, make every report the app writes visible and reviewable.</p>
+<blockquote>
+<p>Working with Claude Code? Run <code>/tutor</code> and it'll walk this step with you, then check it.</p>
+</blockquote>
+<pre><code class="language-bash">git checkout -b step-1-observe
+</code></pre>
+<h2>Why this first</h2>
+<p>The staff say the reports are &quot;sometimes weird.&quot; Try answering any of these today:</p>
+<ul>
+<li>How often is it weird?</li>
+<li>Weird how — invented facts, wrong tone, missing medication?</li>
+<li>What does a report cost us, and how slow is it?</li>
+<li>Show me the exact report that upset Mrs. Alvarez on Tuesday.</li>
+</ul>
+<p>You can't answer one of them. The model call happens, the text lands on a screen, and it's gone. Every later step — scoring, datasets, comparing prompts — needs a record, and no record exists.</p>
+<h2>What you'll add</h2>
+<p>Two wraps, doing different jobs:</p>
+<ul>
+<li><strong><code>wrapOpenAI</code></strong> instruments the model client. Each call records its messages, tokens, cost and duration.</li>
+<li><strong><code>traced</code> + <code>span.log</code></strong> wrap the <em>operation</em>: which dog, which prompt version, what your app handed over and got back.</li>
+</ul>
+<p>The model call nests inside the operation, so one report card becomes one trace with two levels:</p>
+<pre><code>daily report                    input: Rufus's day log · output: the report card
+└── chat.completions.create     system + user messages · 412 tokens · $0.0004 · 2.1s
+</code></pre>
+<p>Wrap only the client and you'll know a call happened but not who it was for. Wrap only the operation and you lose cost and tokens. You want both.</p>
+<h2>Do it</h2>
+<p><strong>1. Install the SDK</strong></p>
+<pre><code class="language-bash">bun add braintrust
+</code></pre>
+<p><strong>2. <code>app/llm.ts</code> — wrap the client</strong></p>
+<pre><code class="language-ts">import OpenAI from 'openai'
+import { initLogger, wrapOpenAI } from 'braintrust'
+
+const apiKey = process.env.NOUS_API_KEY
+if (!apiKey) {
+  throw new Error('Set NOUS_API_KEY in .env — run `bun run setup` if you have not yet.')
+}
+
+// Where traces go. The project is created on first use.
+export const logger = initLogger({ projectName: 'Happy Tails' })
+
+export const llm = wrapOpenAI(
+  new OpenAI({
+    baseURL: process.env.NOUS_BASE_URL ?? 'https://inference-api.nousresearch.com/v1',
+    apiKey,
+  }),
+)
+
+export const MODEL = process.env.MODEL ?? 'anthropic/claude-haiku-4.5'
+</code></pre>
+<p><strong>3. <code>app/report.ts</code> — wrap the operation</strong></p>
+<p>Add <code>import { traced } from 'braintrust'</code> at the top, then wrap the existing body of <code>writeReport</code>:</p>
+<pre><code class="language-ts">  return traced(
+    async (span) =&gt; {
+      const res = await llm.chat.completions.create({
+        model: MODEL,
+        max_tokens: 500,
+        messages: [
+          { role: 'system', content: active.body },
+          { role: 'user', content: JSON.stringify(dog, null, 2) },
+        ],
+      })
+
+      const body = res.choices[0]?.message?.content ?? ''
+
+      span.log({
+        input: dog,
+        output: body,
+        metadata: { dog: dog.name, prompt_version: active.version, model: MODEL },
+      })
+
+      return { body, promptVersion: active.version, model: MODEL }
+    },
+    { name: 'daily report' },
+  )
+</code></pre>
+<p><strong>4. Generate some traffic</strong></p>
+<p>Restart the server and click all four dogs, using <strong>Regenerate</strong> for any that already have a report.</p>
+<h2>Check yourself</h2>
+<p>Open braintrust.dev → <strong>Happy Tails</strong> → <strong>Logs</strong>. You should have four traces named <code>daily report</code>. Expand one and find:</p>
+<ul>
+<li>the day log in the parent's <strong>input</strong>, and the report card in its <strong>output</strong></li>
+<li>a child span for the model call, with the system and user messages</li>
+<li><strong>tokens, cost and duration</strong> on that child</li>
+<li>your <strong>metadata</strong> — dog, prompt version, model</li>
+</ul>
+<p>Now find Rufus's trace and read the output next to the input. Same fiction as on the website, except now it's a row you can point at, link to, and count.</p>
+<h2>Then: metadata is free now and impossible later</h2>
+<p>Ask Braintrust: <em>show me only reports for dogs that were on medication.</em> You can't. Nothing recorded it.</p>
+<p>Add facts about the situation to that <code>span.log</code> call:</p>
+<pre><code class="language-ts">        metadata: {
+          dog: dog.name,
+          prompt_version: active.version,
+          model: MODEL,
+          has_meds: dog.meds.length &gt; 0,
+          has_incidents: dog.incidents.length &gt; 0,
+          play_minutes: dog.play.reduce((n, p) =&gt; n + p.minutes, 0),
+          ate_nothing: dog.meals.every((m) =&gt; m.eaten_g === 0),
+        },
+</code></pre>
+<p>Regenerate the four reports, then filter Logs on <code>metadata.has_meds = true</code>. Nacho, and only Nacho.</p>
+<p><strong>The habit worth keeping:</strong> log the <em>situation</em>, not just input and output. The question you'll want to answer six months from now is &quot;did quality drop on the hard cases?&quot; — and it's only answerable if something back here marked which cases were hard.</p>
+<h2>Commit</h2>
+<pre><code class="language-bash">git add -A &amp;&amp; git commit -m &quot;step 1: log every report to Braintrust&quot;
+</code></pre>
+<h2>What you can do now that you couldn't before</h2>
+<p>Read any report the app has ever written, with its cost, its latency, and the exact data it came from — and filter down to the situations you care about.</p>
+<p><strong>What you still can't do:</strong> say whether any of it is <em>good</em>. Four traces, zero judgements. That's step 2: scoring one specific thing, in plain code, with no AI involved.</p>
+</article>
+</div>
+</body></html>
