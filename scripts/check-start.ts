@@ -32,6 +32,12 @@ if (pkg.dependencies?.braintrust) {
   problems.push('package.json lists braintrust — step 1 is `bun add braintrust`')
 }
 
+// A stale lockfile means every fresh clone shows bun.lock as modified right after setup.
+const frozen = Bun.spawnSync(['bun', 'install', '--frozen-lockfile'], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
+if (frozen.exitCode !== 0) {
+  problems.push('bun.lock is out of sync with package.json — run `bun install` and commit bun.lock')
+}
+
 // 2. The course has to be there, and reachable.
 for (const doc of ['README.md', 'CLAUDE.md', 'learn/README.md', 'learn/step-01-observe.md', 'app/README.md']) {
   if (!existsSync(`${root}${doc}`)) problems.push(`missing ${doc}`)
