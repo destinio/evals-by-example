@@ -4,15 +4,12 @@
 
 > Working with Claude Code? Run `/tutor` and it'll walk this step with you, then check it.
 
-From your main folder:
+Make sure you're on your own branch (the installer does this), and the app is running:
 
 ```bash
-bun run step 1
-cd ../evals-by-example-steps/step-01-observe
-PORT=3023 bun run app
+git switch -c my-course     # skip if you're already on it
+bun run app
 ```
-
-Everything below happens in that step folder. Your main folder stays on `main`, untouched — see [how the steps work](README.md#how-the-steps-work).
 
 ## Why this first
 

@@ -22,80 +22,35 @@ The tutor figures out where you are, explains the next idea, and checks your wor
 
 It won't write the step for you. You'll get the explanation and the code to apply yourself, one idea at a time.
 
-## How the steps work
+## How to work through it
 
-Every step gets **its own folder** — a git worktree — and your main folder never leaves `main`.
-
-```
-evals-by-example/                  ← main: the clean starting point, never instrumented
-evals-by-example-steps/
-  step-01-observe/                 ← your step 1 work, port 3023
-  step-02-score/                   ← builds on step 1, port 3024
-```
-
-Why bother: `main` can't accidentally pick up your step work, you never switch branches mid-thought, and every step runs on its own port — so the naive app on 3022 and your improved one on 3025 can be open side by side.
-
-### Start a step
-
-From your main folder:
+Do it all in your copy of the repo, on your own branch, so `main` stays clean:
 
 ```bash
-bun run step 1
+git switch -c my-course
 ```
 
-That creates branch `step-01-observe` in `../evals-by-example-steps/step-01-observe`, copies your `.env` across, installs dependencies, and prints what to run next:
+(The one-line installer already did this for you.)
+
+Then work through the steps in order, in the same folder. Commit whenever you like — it's your branch.
+
+### Getting course updates
+
+New steps land on `main`. To pull them into your branch:
 
 ```bash
-cd ../evals-by-example-steps/step-01-observe
-PORT=3023 bun run app
+git switch main && git pull
+git switch my-course && git merge main
 ```
 
-Step 2 onwards branches from the step before it, so your work carries forward. `bun run step 2` refuses to start until step 1 exists. Names come from `learn/course.json`, so the branch, the folder and the step's write-up all share one slug.
-
-### Finish a step
-
-Three moves. The first is your work; the other two make the course better for the next person.
-
-**1. Commit your work — in the step folder.**
+### Starting over
 
 ```bash
-git add -A && git commit -m "step-01-observe: log every report to Braintrust"
+git switch main                    # the untouched app
+rm app/data/happytails.db          # forget generated reports; reseeds on next launch
 ```
 
-**2. Write up what you learned — in the main folder.** The write-up, a clearer explanation, a fix to the app, a nastier dog: anything that improves the *starting experience*. Never the applied code — `main` stays free of Braintrust.
-
-```bash
-cd ../../evals-by-example
-# write learn/step-01-observe.md, fix whatever tripped you up
-bun run docs:build
-git add -A && git commit -m "step-01-observe write-up"
-bun run check:start                # fails if Braintrust leaked into app/
-```
-
-**3. Pull the improved course into your step — back in the step folder.**
-
-```bash
-cd ../evals-by-example-steps/step-01-observe
-git merge main
-```
-
-`merge`, not `rebase`: your step branches are chained one after another and may be pushed, and merging never rewrites history under you.
-
-### See what you've got
-
-```bash
-bun run step                        # every worktree, its branch and folder
-```
-
-### Back to the start
-
-Your main folder already *is* the start. To clear the reports it's generated:
-
-```bash
-rm app/data/happytails.db           # reseeds on next launch: four dogs, the original prompt
-```
-
-Each worktree has its own database, so resetting one never touches another. Before a demo, tag a guaranteed return point: `git tag demo-monday`.
+Your `my-course` branch is still there if you want to go back to it.
 
 ## The steps
 

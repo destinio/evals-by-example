@@ -248,48 +248,22 @@
 </code></pre>
 <p>The tutor figures out where you are, explains the next idea, and checks your work when you say a step is done. Good moments to call it: &quot;what's next&quot;, &quot;check my work&quot;, &quot;why isn't this showing up in Braintrust&quot;, or any time a word like <em>span</em> or <em>scorer</em> stops making sense.</p>
 <p>It won't write the step for you. You'll get the explanation and the code to apply yourself, one idea at a time.</p>
-<h2>How the steps work</h2>
-<p>Every step gets <strong>its own folder</strong> — a git worktree — and your main folder never leaves <code>main</code>.</p>
-<pre><code>evals-by-example/                  ← main: the clean starting point, never instrumented
-evals-by-example-steps/
-  step-01-observe/                 ← your step 1 work, port 3023
-  step-02-score/                   ← builds on step 1, port 3024
+<h2>How to work through it</h2>
+<p>Do it all in your copy of the repo, on your own branch, so <code>main</code> stays clean:</p>
+<pre><code class="language-bash">git switch -c my-course
 </code></pre>
-<p>Why bother: <code>main</code> can't accidentally pick up your step work, you never switch branches mid-thought, and every step runs on its own port — so the naive app on 3022 and your improved one on 3025 can be open side by side.</p>
-<h3>Start a step</h3>
-<p>From your main folder:</p>
-<pre><code class="language-bash">bun run step 1
+<p>(The one-line installer already did this for you.)</p>
+<p>Then work through the steps in order, in the same folder. Commit whenever you like — it's your branch.</p>
+<h3>Getting course updates</h3>
+<p>New steps land on <code>main</code>. To pull them into your branch:</p>
+<pre><code class="language-bash">git switch main &amp;&amp; git pull
+git switch my-course &amp;&amp; git merge main
 </code></pre>
-<p>That creates branch <code>step-01-observe</code> in <code>../evals-by-example-steps/step-01-observe</code>, copies your <code>.env</code> across, installs dependencies, and prints what to run next:</p>
-<pre><code class="language-bash">cd ../evals-by-example-steps/step-01-observe
-PORT=3023 bun run app
+<h3>Starting over</h3>
+<pre><code class="language-bash">git switch main                    # the untouched app
+rm app/data/happytails.db          # forget generated reports; reseeds on next launch
 </code></pre>
-<p>Step 2 onwards branches from the step before it, so your work carries forward. <code>bun run step 2</code> refuses to start until step 1 exists. Names come from <code>learn/course.json</code>, so the branch, the folder and the step's write-up all share one slug.</p>
-<h3>Finish a step</h3>
-<p>Three moves. The first is your work; the other two make the course better for the next person.</p>
-<p><strong>1. Commit your work — in the step folder.</strong></p>
-<pre><code class="language-bash">git add -A &amp;&amp; git commit -m &quot;step-01-observe: log every report to Braintrust&quot;
-</code></pre>
-<p><strong>2. Write up what you learned — in the main folder.</strong> The write-up, a clearer explanation, a fix to the app, a nastier dog: anything that improves the <em>starting experience</em>. Never the applied code — <code>main</code> stays free of Braintrust.</p>
-<pre><code class="language-bash">cd ../../evals-by-example
-# write learn/step-01-observe.md, fix whatever tripped you up
-bun run docs:build
-git add -A &amp;&amp; git commit -m &quot;step-01-observe write-up&quot;
-bun run check:start                # fails if Braintrust leaked into app/
-</code></pre>
-<p><strong>3. Pull the improved course into your step — back in the step folder.</strong></p>
-<pre><code class="language-bash">cd ../evals-by-example-steps/step-01-observe
-git merge main
-</code></pre>
-<p><code>merge</code>, not <code>rebase</code>: your step branches are chained one after another and may be pushed, and merging never rewrites history under you.</p>
-<h3>See what you've got</h3>
-<pre><code class="language-bash">bun run step                        # every worktree, its branch and folder
-</code></pre>
-<h3>Back to the start</h3>
-<p>Your main folder already <em>is</em> the start. To clear the reports it's generated:</p>
-<pre><code class="language-bash">rm app/data/happytails.db           # reseeds on next launch: four dogs, the original prompt
-</code></pre>
-<p>Each worktree has its own database, so resetting one never touches another. Before a demo, tag a guaranteed return point: <code>git tag demo-monday</code>.</p>
+<p>Your <code>my-course</code> branch is still there if you want to go back to it.</p>
 <h2>The steps</h2>
 <p>Nine steps, each one leaving you able to <em>show</em> something, not just know it. The last column is the moment you'd put on a screen for your team.</p>
 <table>

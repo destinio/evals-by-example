@@ -60,6 +60,10 @@ ok "cloned"
 
 cd "$DIR"
 
+# Your work goes on your own branch, so main stays clean for pulling course updates.
+git switch --quiet -c my-course
+ok "on branch my-course (main stays clean for updates)"
+
 # ------------------------------------------------------------------ setup
 
 say ""

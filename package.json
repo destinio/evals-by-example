@@ -8,7 +8,6 @@
     "dev": "bun --hot app/server.ts",
     "check:start": "bun scripts/check-start.ts",
     "setup": "bun scripts/setup.ts",
-    "step": "bun scripts/step.ts",
     "docs:build": "bun scripts/docs-build.ts"
   },
   "type": "module",
