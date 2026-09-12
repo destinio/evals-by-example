@@ -50,6 +50,21 @@
               color:var(--soft); border:1px solid var(--line); border-radius:10px; padding:0 6px; }
   nav a[aria-current="page"] .soon { color:#fff; border-color:rgba(255,255,255,.4); }
 
+  /* get started, top of the overview */
+  .start { margin:0 0 34px; padding-bottom:30px; border-bottom:1px solid var(--line); }
+  .start .eyebrow { margin-bottom:10px; }
+  .start-title { font-size:1.55rem; font-weight:700; line-height:1.25; letter-spacing:-.01em; margin:0 0 10px; text-wrap:balance; }
+  .start-sub { color:var(--soft); margin:0 0 18px; max-width:62ch; }
+  .cmd { display:flex; align-items:center; gap:10px; background:#14231c; border-radius:10px; padding:12px 12px 12px 16px; }
+  .cmd code { background:none; color:#e6ece9; font-size:.84rem; padding:0; white-space:pre-wrap; word-break:break-all; flex:1; line-height:1.5; }
+  .cmd code::before { content:"$ "; color:#7d9b8e; }
+  .copy { flex:none; font:inherit; font-size:.8rem; padding:5px 12px; border-radius:7px; cursor:pointer;
+          background:#23382d; color:#e6ece9; border:1px solid #2f4a3c; }
+  .copy:hover { background:#2f4a3c; }
+  .copy:focus-visible { outline:2px solid #4ec39c; outline-offset:2px; }
+  .start-small { font-size:.84rem; color:var(--soft); margin:12px 0 0; line-height:1.6; }
+  .start-small code { font-size:.78rem; }
+
   /* roadmap on the overview */
   .roadmap { margin:0 0 34px; }
   .road-intro { margin:0 0 14px; color:var(--soft); }
@@ -94,6 +109,27 @@
 <div class="layout">
   <nav><h2>Steps</h2><a href="index.html" aria-current="page"><span class="num">🐶</span>Overview</a><a href="step-01-observe.html"><span class="num">1</span>Observe</a><a href="step-02-score.html" class="planned"><span class="num">2</span>Score one thing<span class="soon">soon</span></a><a href="step-03-hard-cases.html" class="planned"><span class="num">3</span>Keep the hard cases<span class="soon">soon</span></a><a href="step-04-prove-it.html" class="planned"><span class="num">4</span>Fix the prompt, prove it<span class="soon">soon</span></a><a href="step-05-judge.html" class="planned"><span class="num">5</span>Judge what code can't<span class="soon">soon</span></a><a href="step-06-humans.html" class="planned"><span class="num">6</span>Ask the humans<span class="soon">soon</span></a><a href="step-07-no-deploy.html" class="planned"><span class="num">7</span>Iterate without deploying<span class="soon">soon</span></a><a href="step-08-production.html" class="planned"><span class="num">8</span>Watch production<span class="soon">soon</span></a><a href="step-09-ship.html" class="planned"><span class="num">9</span>Ship it honestly<span class="soon">soon</span></a></nav>
   <article>
+  <section class="start" aria-label="Get started">
+    <p class="eyebrow">🐶 Get started</p>
+    <p class="start-title">Learn LLM evals by fixing an app that's quietly lying to its customers.</p>
+    <p class="start-sub">A dog daycare's AI writes report cards for owners. Rufus ate nothing, never played and hid
+    under a bench — his report says he had a lovely, sociable day. Nine steps take you from spotting that to
+    measuring it, with Braintrust.</p>
+    <div class="cmd">
+      <code>curl -fsSL https://destinio.github.io/evals-by-example/install.sh | bash</code>
+      <button type="button" class="copy" data-copy="curl -fsSL https://destinio.github.io/evals-by-example/install.sh | bash">Copy</button>
+    </div>
+    <p class="start-small">Needs <a href="https://bun.com">Bun 1.4+</a> and git. It clones the repo, installs
+    dependencies and asks for two API keys. <a href="https://github.com/destinio/evals-by-example/blob/main/scripts/install.sh">Read the script</a> first,
+    or do it by hand: <code>git clone https://github.com/destinio/evals-by-example.git &amp;&amp; cd evals-by-example &amp;&amp; bun run setup</code></p>
+  </section>
+  <script>
+    document.querySelectorAll('.copy').forEach((btn) => btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.copy); btn.textContent = 'Copied'; }
+      catch { btn.textContent = 'Select & copy'; }
+      setTimeout(() => (btn.textContent = 'Copy'), 1600);
+    }));
+  </script>
   <section class="roadmap" aria-label="Course roadmap">
     <p class="road-intro">🐶 <strong>The whole course.</strong> 1 of 9 steps written — the rest are
     planned below and get written as the course is worked through, so they can quote real runs.</p>

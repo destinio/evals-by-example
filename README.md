@@ -6,6 +6,8 @@
 
 **Learn LLM evals by fixing an app that's quietly lying to its customers.**
 
+🐶 **[Read the course](https://destinio.github.io/evals-by-example/)** · **[Install](#quick-start)** · **[The nine steps](#what-youll-build)**
+
 The example app is **Happy Tails**, a dog daycare. The front desk logs each dog's day; the site shows the owner a report card written by an LLM. It works, it looks fine, and nobody has ever checked whether it's true.
 
 Rufus ate nothing, never played, and hid under a bench all morning. His report tells his owner he had a lovely, sociable day.
@@ -15,7 +17,13 @@ You've been hired to fix that — not by rewriting the prompt on a hunch, but by
 ## Quick start
 
 ```bash
-git clone <this repo> && cd btrust
+curl -fsSL https://destinio.github.io/evals-by-example/install.sh | bash
+```
+
+That clones the repo, installs dependencies, and walks you through setup. ([Read the script](scripts/install.sh) first if you like.) Or by hand:
+
+```bash
+git clone https://github.com/destinio/evals-by-example.git && cd evals-by-example
 bun run setup
 ```
 
@@ -37,9 +45,24 @@ Then open **http://localhost:3022/learn** — the course is served beside the ap
 
 Reports cost about a tenth of a cent each. Every experiment in the course is a few cents.
 
+## What you'll learn
+
+Every idea is introduced on the day the app actually needs it, not as theory up front:
+
+- **Tracing** — recording what your LLM app did, what it cost, and what data it saw
+- **Scorers** — grading outputs 0 to 1, starting with plain code and no AI at all
+- **Experiments** — running a prompt over fixed test cases and getting a number you can compare
+- **Datasets** — keeping the hard cases forever so fixes can't silently regress
+- **Comparing prompt versions** — row-by-row diffs, including what a change made *worse*
+- **LLM-as-a-judge** — using a model to grade what code can't check, and validating that judge against human opinion before trusting it
+- **Human feedback** — turning thumbs-down and corrections into test cases
+- **Prompt management** — versioned prompts and a playground, so changes don't need a deploy
+- **Online scoring** — scoring live production traffic and watching quality and cost over time
+- **Shipping safely** — trials to beat run-to-run noise, and a regression gate in CI
+
 ## What you'll build
 
-Nine steps, each ending in something you can show someone:
+Nine steps, each ending in something you can show someone. The **[course site](https://destinio.github.io/evals-by-example/)** maps all of them, including the ones still being written:
 
 | # | Step | You end up able to say |
 |---|---|---|
@@ -72,6 +95,7 @@ In Claude Code, this repo ships a **`/tutor`** skill. It works out which step yo
 
 ```bash
 bun run setup          # first-time setup; --check to verify without prompting
+bun run docs:build     # rebuild the course site into docs/
 bun run app            # the daycare at http://localhost:3022
 bun run dev            # same, with hot reload
 bun run step 2 score   # branch + worktree for a step, on its own port

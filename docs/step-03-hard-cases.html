@@ -50,6 +50,21 @@
               color:var(--soft); border:1px solid var(--line); border-radius:10px; padding:0 6px; }
   nav a[aria-current="page"] .soon { color:#fff; border-color:rgba(255,255,255,.4); }
 
+  /* get started, top of the overview */
+  .start { margin:0 0 34px; padding-bottom:30px; border-bottom:1px solid var(--line); }
+  .start .eyebrow { margin-bottom:10px; }
+  .start-title { font-size:1.55rem; font-weight:700; line-height:1.25; letter-spacing:-.01em; margin:0 0 10px; text-wrap:balance; }
+  .start-sub { color:var(--soft); margin:0 0 18px; max-width:62ch; }
+  .cmd { display:flex; align-items:center; gap:10px; background:#14231c; border-radius:10px; padding:12px 12px 12px 16px; }
+  .cmd code { background:none; color:#e6ece9; font-size:.84rem; padding:0; white-space:pre-wrap; word-break:break-all; flex:1; line-height:1.5; }
+  .cmd code::before { content:"$ "; color:#7d9b8e; }
+  .copy { flex:none; font:inherit; font-size:.8rem; padding:5px 12px; border-radius:7px; cursor:pointer;
+          background:#23382d; color:#e6ece9; border:1px solid #2f4a3c; }
+  .copy:hover { background:#2f4a3c; }
+  .copy:focus-visible { outline:2px solid #4ec39c; outline-offset:2px; }
+  .start-small { font-size:.84rem; color:var(--soft); margin:12px 0 0; line-height:1.6; }
+  .start-small code { font-size:.78rem; }
+
   /* roadmap on the overview */
   .roadmap { margin:0 0 34px; }
   .road-intro { margin:0 0 14px; color:var(--soft); }

@@ -18,6 +18,9 @@ mkdirSync(out, { recursive: true })
 // Pages is Jekyll by default, which would ignore anything it doesn't understand.
 await Bun.write(`${out}.nojekyll`, '')
 
+// Served beside the site so `curl -fsSL <site>/install.sh | bash` works.
+await Bun.write(`${out}install.sh`, Bun.file(new URL('install.sh', import.meta.url)))
+
 const written: string[] = []
 
 const index = await renderDoc('index', 'static')
